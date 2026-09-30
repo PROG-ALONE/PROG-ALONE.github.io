@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d3b66">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="نظام المدرسة">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<title>نظام إدارة المدرسة - الدرجات والجداول</title>
+<style>
+:root{
+  --pri:#0d3b66;--pri2:#1a5276;--sec:#1565c0;--acc:#b8860b;--acc2:#daa520;
+  --ok:#2e7d32;--bad:#c62828;--bg:#f3f6fa;--card:#fff;--text:#1a1a2e;--muted:#64748b;--line:#d8e0ea;
+  --oral:#fdecef;--written:#e9f1fb;--sub:#fff5d6;--tot:#e5f4e7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.ic{width:1.1em;height:1.1em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
+/* header + nav */
+.top{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:calc(.7rem + env(safe-area-inset-top)) 1rem .7rem;text-align:center}
+.top h1{font-size:clamp(1.05rem,3vw,1.4rem);font-weight:800}
+.top .sub{font-size:.85rem;opacity:.85}
+.nav{position:sticky;top:0;z-index:50;display:flex;gap:.35rem;overflow-x:auto;padding:.5rem .6rem;background:#fff;border-bottom:1px solid var(--line);scrollbar-width:none;box-shadow:0 2px 8px rgba(13,59,102,.06)}
+.nav::-webkit-scrollbar{display:none}
+@media(min-width:900px){.nav{flex-wrap:wrap;justify-content:center}}
+.nav button{flex:0 0 auto;display:flex;align-items:center;gap:.35rem;border:1px solid transparent;background:#eef2f7;color:#40506a;border-radius:22px;padding:.5rem .95rem;font-weight:700;font-size:.88rem;cursor:pointer;min-height:40px}
+.nav button.on{background:var(--pri);color:#fff;border-color:var(--acc)}
+
+.wrap{max-width:1400px;margin:0 auto;padding:.9rem .8rem 90px}
+.card{background:var(--card);border-radius:14px;padding:1rem 1.1rem;margin-bottom:1rem;box-shadow:0 3px 14px rgba(13,59,102,.07);border:1px solid rgba(0,0,0,.03)}
+.card h2{font-size:1.08rem;color:var(--pri);display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:2px solid var(--line)}
+.card h2::before{content:'';width:4px;height:20px;background:var(--acc);border-radius:2px}
+.card h3{font-size:.98rem;color:var(--pri);margin:.6rem 0 .4rem}
+.muted{color:var(--muted);font-size:.85rem}
+.hint{background:#eef5fc;border-right:3px solid var(--sec);padding:.6rem .8rem;border-radius:8px;font-size:.86rem;margin:.6rem 0;color:#27405f}
+.warn{background:#fff6e0;border-right:3px solid var(--acc);padding:.6rem .8rem;border-radius:8px;font-size:.86rem;margin:.6rem 0;color:#6b4d00}
+.err{background:#fdecec;border-right:3px solid var(--bad);padding:.6rem .8rem;border-radius:8px;font-size:.86rem;margin:.6rem 0;color:#8a1c1c}
+.good{background:#e8f5e9;border-right:3px solid var(--ok);padding:.6rem .8rem;border-radius:8px;font-size:.86rem;margin:.6rem 0;color:#1b5e20}
+
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end}
+.row>.f{flex:1 1 160px;min-width:0}
+.f label{display:block;font-size:.82rem;font-weight:700;color:#4a5a73;margin-bottom:.25rem}
+input.in,select.in,textarea.in{width:100%;padding:.6rem .7rem;border:1.5px solid var(--line);border-radius:9px;background:#fbfcfd;font-size:.95rem;min-height:42px}
+textarea.in{min-height:80px;resize:vertical}
+.in:focus{outline:none;border-color:var(--sec);background:#fff;box-shadow:0 0 0 3px rgba(21,101,192,.1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:none;border-radius:9px;padding:.55rem 1rem;font-weight:700;cursor:pointer;min-height:42px;font-size:.9rem;background:#e8edf3;color:var(--text);white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.p{background:var(--pri);color:#fff}.btn.g{background:var(--ok);color:#fff}.btn.r{background:var(--bad);color:#fff}
+.btn.y{background:var(--acc);color:#fff}.btn.b{background:var(--sec);color:#fff}
+.btn.sm{min-height:34px;padding:.3rem .7rem;font-size:.82rem}
+.btn:disabled{opacity:.5}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0}
+.chip{display:inline-flex;align-items:center;gap:.3rem;background:#eef2f7;border-radius:16px;padding:.2rem .65rem;font-size:.82rem;font-weight:700;margin:.15rem}
+.chip button{border:none;background:none;color:var(--bad);font-weight:800;cursor:pointer;font-size:1rem;line-height:1}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.7rem;margin-bottom:1rem}
+.stat{background:linear-gradient(145deg,var(--pri),var(--pri2));color:#fff;border-radius:14px;padding:.9rem;text-align:center}
+.stat b{display:block;font-size:1.8rem;line-height:1.2}
+.stat span{font-size:.82rem;opacity:.9}
+.hero{background:linear-gradient(135deg,#0d3b66 0%,#1a5276 60%,#b8860b 140%);color:#fff;border-radius:16px;padding:1.2rem 1.3rem;margin-bottom:1rem}
+.hero .g1{font-size:1.35rem;font-weight:800}
+.steps{list-style:none;counter-reset:s}
+.steps li{display:flex;align-items:center;gap:.7rem;padding:.6rem .4rem;border-bottom:1px dashed var(--line);cursor:pointer}
+.steps li:last-child{border:none}
+.steps .n{width:30px;height:30px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--pri);flex:0 0 auto}
+.steps li.done .n{background:var(--ok);color:#fff}
+.cls-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.7rem}
+.cls-card{border:1.5px solid var(--line);border-radius:12px;padding:.8rem;cursor:pointer;background:linear-gradient(145deg,#fff,#f4f8fc)}
+.cls-card b{color:var(--pri);font-size:1.05rem;display:block}
+
+/* tables */
+.tw{overflow:auto;border:1.5px solid var(--line);border-radius:10px;background:#fff;max-height:75vh;-webkit-overflow-scrolling:touch}
+table.t{border-collapse:separate;border-spacing:0;width:100%;font-size:.88rem}
+table.t th,table.t td{border-left:1px solid #e3e9f0;border-bottom:1px solid #e3e9f0;padding:.35rem .4rem;text-align:center;white-space:nowrap}
+table.t thead th{background:var(--pri);color:#fff;font-weight:700;position:sticky;top:0;z-index:3;font-size:.8rem}
+table.t thead tr:nth-child(2) th{top:var(--h1,34px)}
+table.t thead tr:nth-child(3) th{top:var(--h2,68px)}
+table.t th small{display:block;opacity:.85;font-weight:600}
+table.t th.band{background:#1e3a5f}table.t th.grp{background:#2c5282}
+table.t th.subh{background:#7c5800}table.t th.toth{background:#1b5e20}
+table.t tbody tr:nth-child(even) td{background:#f8fafc}
+table.t td.nm{text-align:right;font-weight:700;min-width:150px;position:sticky;right:0;z-index:2;background:#fff;box-shadow:-3px 0 6px rgba(13,59,102,.06)}
+table.t tbody tr:nth-child(even) td.nm{background:#f8fafc}
+table.t thead th.nm{position:sticky;right:0;z-index:5}
+table.t td.no{color:var(--muted);font-weight:700;width:34px}
+table.t td.sub{background:var(--sub)!important;font-weight:800;color:#6b4d00}
+table.t td.tot{background:var(--tot)!important;font-weight:800;color:#1b5e20}
+table.t td.calc{background:#f1f5fb!important;font-weight:700;color:var(--pri)}
+table.t td.fail{background:#fdecec!important;color:var(--bad)!important;font-weight:800}
+table.t td.pass{background:#e5f4e7!important;color:var(--ok)!important;font-weight:800}
+table.t td.auto{background:#eef6ff!important;color:#0d47a1;font-weight:700}
+input.g{width:58px;padding:.35rem .2rem;border:1.5px solid #cdd6e1;border-radius:7px;text-align:center;font-weight:700;background:#fff;font-size:.95rem}
+input.g:focus{outline:none;border-color:var(--sec);background:#fffde8;box-shadow:0 0 0 3px rgba(21,101,192,.12)}
+input.g.bad{border-color:var(--bad);background:#fff0f0;color:var(--bad)}
+.savebar{font-size:.8rem;color:var(--muted);min-height:1.2em}
+.legend{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:.5rem}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-left:4px;vertical-align:-1px;border:1px solid #ccd}
+
+/* list rows */
+.li{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.6rem .7rem;border-radius:10px;background:#f8fafc;margin-bottom:.45rem;border-right:4px solid var(--pri);flex-wrap:wrap}
+.li .acts{display:flex;gap:.3rem;flex-wrap:wrap}
+
+/* timetable */
+table.tt td{height:56px;min-width:92px;cursor:pointer;white-space:normal;line-height:1.3}
+table.tt td.dayh{background:#1e3a5f!important;color:#fff;font-weight:800;cursor:default;min-width:70px}
+table.tt td b{display:block;font-size:.9rem;color:var(--pri)}
+table.tt td small{color:var(--muted);font-size:.75rem}
+table.tt td.pick{outline:3px solid var(--acc);outline-offset:-3px;background:#fff8e1!important}
+table.tt td.conf{background:#fdecec!important}
+table.tt td.off{background:repeating-linear-gradient(45deg,#f1f4f8,#f1f4f8 6px,#e7ecf2 6px,#e7ecf2 12px)!important;cursor:default}
+
+/* seating */
+.room{display:inline-block;margin:0 0 1rem;max-width:100%}
+.board{background:#2d4a3e;color:#fff;text-align:center;border-radius:8px 8px 0 0;padding:.3rem;font-weight:700;font-size:.85rem}
+table.seat{border-collapse:separate;border-spacing:5px;background:#f6f8fb;border:1.5px solid var(--line);border-top:none;border-radius:0 0 10px 10px}
+table.seat td{width:110px;height:64px;border:1.5px solid #c9d3df;border-radius:8px;text-align:center;font-size:.78rem;padding:.2rem;vertical-align:middle;white-space:normal;line-height:1.25}
+table.seat td .sn{font-weight:800;font-size:.9rem;color:var(--pri)}
+table.seat td .nm{font-weight:700}
+table.seat td .cl{font-size:.7rem;color:#555}
+table.seat.mini{border-spacing:3px}
+table.seat.mini td{width:24px;height:20px;border-radius:4px;padding:0;font-size:.6rem}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(13,30,55,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:760px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-h{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.1rem;border-bottom:1px solid var(--line);color:var(--pri);font-size:1.05rem}
+.modal-b{padding:1rem 1.1rem;overflow:auto}
+.modal-f{padding:.7rem 1.1rem;border-top:1px solid var(--line);display:flex;gap:.5rem;justify-content:flex-start;flex-wrap:wrap}
+.x{border:none;background:#eef2f7;border-radius:8px;width:36px;height:36px;font-size:1.2rem;cursor:pointer}
+.band-box{border:1.5px solid var(--line);border-radius:12px;padding:.7rem;margin-bottom:.7rem;background:#fafcfe}
+.grp-box{border-right:3px solid var(--sec);padding:.5rem .6rem .3rem;margin:.5rem 0;background:#fff;border-radius:8px}
+.item-row{display:flex;gap:.4rem;margin-bottom:.35rem;align-items:center}
+.item-row .in{min-height:36px;padding:.35rem .5rem}
+
+/* toast */
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,120px);background:var(--pri);color:#fff;padding:.75rem 1.4rem;border-radius:12px;z-index:400;opacity:0;transition:.3s;font-weight:700;max-width:92vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast.show{transform:translate(-50%,0);opacity:1}
+#toast.bad{background:var(--bad)}#toast.ok{background:var(--ok)}
+
+/* print view (full page preview) */
+body.pv-open>*:not(#printView):not(#toast):not(#pageSize){display:none!important}
+#printView{background:#e9edf2;min-height:100vh}
+.pv-bar{position:sticky;top:0;z-index:10;background:var(--pri);color:#fff;padding:calc(.5rem + env(safe-area-inset-top)) .7rem .5rem;display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
+.pv-bar .t{margin-right:auto;font-weight:700;font-size:.9rem}
+#printBody{padding:12px}
+.sheet{background:#fff;margin:0 auto 14px;padding:12mm 10mm;box-shadow:0 2px 10px rgba(0,0,0,.12);color:#000;max-width:297mm;font-family:'Times New Roman','Traditional Arabic',Tahoma,serif}
+.sheet.portrait{max-width:210mm}
+.sheet table.pt{border-collapse:collapse;width:100%;font-size:10.5pt}
+.sheet table.pt th,.sheet table.pt td{border:1px solid #333;padding:3px 4px;text-align:center}
+.sheet table.pt th{background:#dfe8f3;font-weight:700}
+.sheet table.pt th.band{background:#c9d8ea}
+.sheet table.pt th.subh,.sheet table.pt td.sub{background:#fbe9c6}
+.sheet table.pt th.toth,.sheet table.pt td.tot{background:#d9efdc}
+.sheet table.pt td.nm{text-align:right;min-width:150px}
+.sheet table.pt td.fail{color:#b00;font-weight:700}
+.sheet table.pt tr{height:22px}
+.sheet .vt{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;max-height:130px;white-space:normal;line-height:1.15}
+.sheet th small{display:block;font-weight:700}
+.ph{text-align:center;margin-bottom:8px}
+.ph .l1{font-size:14pt;font-weight:800}
+.ph .l2{font-size:12pt;font-weight:700}
+.ph3{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;font-weight:700;font-size:11pt}
+.ph3 .c{text-align:center;font-size:14pt;font-weight:800}
+.sig{display:flex;justify-content:space-around;margin-top:18px;font-weight:700;font-size:11pt;text-align:center}
+.pbreak{page-break-after:always;break-after:page}
+.pno{text-align:center;font-size:9pt;color:#555;margin-top:6px}
+
+/* exam paper */
+.exam-paper{border:2px solid #0d3b66;padding:14px 18px;direction:rtl;color:#000}
+.exam-head{width:100%;border-collapse:collapse}
+.exam-head td{border:1.5px solid #0d3b66;padding:6px 10px;vertical-align:top;width:50%;font-size:11.5pt}
+.eh-school{font-size:13pt;font-weight:800;color:#0d3b66}
+.exam-title{text-align:center;font-size:14pt;font-weight:800;color:#0d3b66;margin:10px 0 4px;padding:5px;background:#eef3f9;border:1.5px solid #0d3b66;border-radius:6px}
+.exam-student{display:flex;justify-content:space-between;margin:10px 0;font-weight:700;flex-wrap:wrap;gap:6px}
+.exam-q{margin-bottom:12px;page-break-inside:avoid;break-inside:avoid}
+.exam-q .qt{font-weight:800;color:#0d3b66;display:flex;justify-content:space-between;gap:6px}
+.exam-q .qm{color:#7c5800;white-space:nowrap}
+.exam-q .qx{margin:4px 0;white-space:pre-wrap}
+.exam-q .qo{display:flex;flex-wrap:wrap;gap:4px 22px}
+.match{width:75%;margin:6px auto;border-collapse:collapse}
+.match th{background:#0d3b66;color:#fff;border:1px solid #0d3b66;padding:4px}
+.match td{border:1px solid #555;padding:5px;text-align:right}
+.ans{margin-top:4px;background:#f2f9f2;border:1.5px dashed #2e7d32;border-radius:6px;padding:5px 9px}
+.ans b{color:#2e7d32}
+.wish{text-align:center;font-weight:800;color:#b8860b;margin:16px 0 4px;font-size:13pt}
+
+@media print{
+  @page{margin:8mm}
+  body{background:#fff}
+  .pv-bar{display:none!important}
+  #printView{background:#fff;min-height:0}
+  .sheet{page-break-inside:auto}
+  .sheet table.pt thead{display:table-header-group}
+  .sheet table.pt tr{page-break-inside:avoid;break-inside:avoid}
+  #printBody{padding:0}
+  .sheet{box-shadow:none;margin:0;padding:0;max-width:none;width:100%}
+  #toast,.modal-bg{display:none!important}
+  .sheet table.pt{font-size:9.5pt}
+  .sheet table.pt th,.sheet table.pt td{padding:1px 3px}
+  .sheet table.pt tr{height:20px}
+  .sheet.portrait table.pt tr{height:26px}
+  .sheet table.pt td.nm{min-width:0;white-space:nowrap}
+  .sheet .vt{max-height:105px}
+  .ph{margin-bottom:4px}.ph3{margin-bottom:4px}.sig{margin-top:8px}.pno{margin-top:2px}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
+@media(max-width:640px){
+  .wrap{padding:.6rem .45rem 90px}
+  .card{padding:.8rem}
+  .row>.f{flex-basis:100%}
+  .btns .btn{flex:1 1 auto}
+  table.t td.nm{min-width:110px;font-size:.8rem}
+  input.g{width:50px}
+}
+</style>
+<style id="pageSize"></style>
+</head>
+<body>
+<header class="top"><h1 id="hSchool">نظام إدارة المدرسة</h1><div class="sub" id="hYear"></div></header>
+<nav class="nav" id="nav"></nav>
+<main class="wrap" id="view"><div class="card">جاري التحميل...</div></main>
+
+<div id="printView" class="hidden">
+  <div class="pv-bar" id="pvBar"></div>
+  <div id="printBody"></div>
+</div>
+
+<div class="modal-bg hidden" id="modal">
+  <div class="modal">
+    <div class="modal-h"><strong id="mTitle"></strong><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-b" id="mBody"></div>
+    <div class="modal-f" id="mFoot"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   نظام إدارة المدرسة — الدرجات • الأسئلة • الجدول الأسبوعي • توزيع القاعات
+   ملف واحد، يعمل بدون إنترنت، البيانات محفوظة في IndexedDB على الجهاز
+   ===================================================================== */
+
+// ============ أدوات عامة ============
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o));
+const arCmp = (a, b) => String(a).localeCompare(String(b), 'ar');
+const sum = arr => arr.reduce((a, b) => a + (+b || 0), 0);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const ORD = ['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
+const Q_ORD = ['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر','الحادي عشر','الثاني عشر','الثالث عشر','الرابع عشر','الخامس عشر'];
+const MONTH_NAMES = ['كانون الثاني','شباط','آذار','نيسان','أيار','حزيران','تموز','آب','أيلول','تشرين الأول','تشرين الثاني','كانون الأول'];
+const ACADEMIC_MONTHS = ['أيلول','تشرين الأول','تشرين الثاني','كانون الأول','كانون الثاني','شباط','آذار','نيسان','أيار','حزيران'];
+
+function toNum(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim().replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٫,]/g, '.');
+  if (s === '') return null;
+  const n = Number(s);
+  return isFinite(n) ? n : NaN;
+}
+const fmt = n => (n === null || n === undefined || isNaN(n)) ? '' : String(Math.round(n * 10) / 10);
+function rnd(n) { return S.settings.round ? Math.round(n) : Math.round(n * 10) / 10; }
+
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const t = $('toast'); t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = '', 3200);
+}
+
+const ICONS = {
+  home:'<path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.8"/><path d="M16.8 14.3c2.8.5 4.7 2.6 4.7 5.7"/>',
+  edit:'<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/>',
+  book:'<path d="M4 4.5C7 3.5 10 3.5 12 5.5c2-2 5-2 8-1v15c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 5.5v15"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.8.3-1 .9-1 1.7"/><circle cx="12" cy="16.8" r="1" fill="currentColor"/>',
+  grid:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M9 4v17M15 4v17"/>',
+  seat:'<path d="M7 18v-6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6"/><path d="M5 14h14M7 18v3M17 18v3"/><path d="M9 10V5h6v5"/>',
+  gear:'<circle cx="12" cy="12" r="3.4"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/>',
+  print:'<path d="M7 8V3h10v5"/><rect x="4" y="8" width="16" height="8" rx="1.5"/><rect x="7" y="13" width="10" height="8"/>',
+  xls:'<path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4"/><path d="M9 12l6 6M15 12l-6 6"/>',
+  doc:'<path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4"/><path d="M9 12h6M9 16h6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 14h10l1-14"/>',
+  up:'<path d="M12 21V9"/><path d="M7 13l5-5 5 5"/><path d="M4 4h16"/>',
+  down:'<path d="M12 3v11"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/>',
+  magic:'<path d="M11 4l1.6 4.4L17 10l-4.4 1.6L11 16l-1.6-4.4L5 10l4.4-1.6z"/><path d="M18 14l.9 2.4 2.4.9-2.4.9L18 20.6l-.9-2.4-2.4-.9 2.4-.9z"/>',
+  back:'<path d="M9 6l6 6-6 6"/>',
+  copy:'<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h9"/>',
+  check:'<path d="M4 12.5 9.5 18 20 6"/>',
+  shuffle:'<path d="M3 7h4l10 10h4M3 17h4l3-3M14 10l3-3h4M18 4l3 3-3 3M18 14l3 3-3 3"/>'
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24">${ICONS[n] || ''}</svg>`;
+
+function opts(list, value) {
+  return list.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}"${String(v) === String(value) ? ' selected' : ''}>${esc(l)}</option>`; }).join('');
+}
+
+// ============ قاعدة البيانات ============
+const DB_NAME = 'GranadaSchoolDB';
+let db = null;
+function openDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      d.createObjectStore('meta', { keyPath: 'k' });
+      d.createObjectStore('students', { keyPath: 'id' });
+      d.createObjectStore('grades', { keyPath: 'key' });
+      d.createObjectStore('exams', { keyPath: 'id' });
+    };
+    r.onsuccess = () => { db = r.result; res(); };
+    r.onerror = () => rej(r.error);
+  });
+}
+function tx(store, mode, fn) {
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode); let out;
+    const r = fn(t.objectStore(store));
+    if (r && 'onsuccess' in r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  });
+}
+const dbAll = s => tx(s, 'readonly', os => os.getAll());
+const dbPut = (s, v) => tx(s, 'readwrite', os => os.put(v));
+const dbDel = (s, k) => tx(s, 'readwrite', os => os.delete(k));
+const dbClear = s => tx(s, 'readwrite', os => os.clear());
+const dbPutMany = (s, arr) => tx(s, 'readwrite', os => { arr.forEach(v => os.put(v)); });
+const dbDelMany = (s, keys) => tx(s, 'readwrite', os => { keys.forEach(k => os.delete(k)); });
+const saveMeta = k => dbPut('meta', { k, v: S[k] });
+
+// ============ الحالة ============
+const S = { settings: null, classes: [], subjects: [], students: [], grades: new Map(), exams: [], timetable: null, seating: null };
+const UI = { tab: 'home', stuClass: '', stuSearch: '', mSubj: '', mClass: '', mMonth: '', dir: 'h', ySubj: '', yClass: '',
+  planClass: '', ttView: 'class', ttSel: '', ttPick: null, exam: null, schemeDraft: null, schemeSubj: null };
+
+function defSettings() {
+  return { school: 'مدرسة غرناطة الابتدائية للبنات', year: '2026-2027', teacher: 'نصيف جاسم محمد', principal: 'أحمد محسن عسل',
+    girls: true, term1: ['تشرين الأول', 'تشرين الثاني', 'كانون الأول'], term2: ['آذار', 'نيسان'], round: true,
+    aiKey: '', aiModel: 'gemini-2.5-flash', font: 100, perPage: 20 };
+}
+function defTimetable() {
+  return { days: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'].map(n => ({ name: n, n: 6 })), plans: {}, result: null, stale: false };
+}
+function defSeating() {
+  return { title: 'امتحانات نصف السنة', classes: [], order: 'name', start: 1, rooms: [{ id: uid(), name: 'القاعة 1', rows: 6, cols: 4, mode: 'cols', seq: [] }], result: null };
+}
+const pupils = () => S.settings.girls ? 'تلميذات' : 'تلاميذ';
+const pupilsAl = () => S.settings.girls ? 'التلميذات' : 'التلاميذ';
+
+// ============ نماذج التقييم الشهري ============
+const itm = (name, max) => ({ id: uid(), name, max });
+const PRESETS = {
+  arabic: () => ({ bands: [
+    { id: uid(), name: 'الشفوي', total: true, groups: [{ id: uid(), name: '', items: [itm('قراءة ومعاني', 10), itm('محفوظات', 10), itm('محادثة', 5), itm('أسئلة عامة', 5)] }] },
+    { id: uid(), name: 'التحريري', total: true, groups: [{ id: uid(), name: '', items: [itm('خط', 10), itm('إملاء', 10), itm('تعبير', 20), itm('قواعد', 30)] }] }
+  ] }),
+  islamic: () => ({ bands: [
+    { id: uid(), name: 'التحريري', total: true, groups: [
+      { id: uid(), name: 'القرآن الكريم', items: [itm('حفظ', 20), itm('تلاوة', 10), itm('تفسير', 5), itm('معاني', 5)] },
+      { id: uid(), name: 'التربية الإسلامية', items: [itm('الحديث', 15), itm('العقيدة', 15), itm('السيرة', 10), itm('الآداب', 10)] }] },
+    { id: uid(), name: 'الشفوي (تلاوة)', total: false, groups: [{ id: uid(), name: '', items: [itm('تلاوة', 10)] }] }
+  ] }),
+  single: () => ({ bands: [{ id: uid(), name: 'الدرجة', total: false, groups: [{ id: uid(), name: '', items: [itm('الدرجة', 100)] }] }] })
+};
+const PRESET_NAMES = [['arabic', 'نموذج اللغة العربية (شفوي 30 + تحريري 70)'], ['islamic', 'نموذج التربية الإسلامية (تحريري 90 + شفوي 10)'], ['single', 'درجة واحدة من 100']];
+const schemeItems = sc => sc.bands.flatMap(b => b.groups.flatMap(g => g.items));
+const bandItems = b => b.groups.flatMap(g => g.items);
+const bandMax = b => sum(bandItems(b).map(i => i.max));
+const schemeMax = sc => sum(schemeItems(sc).map(i => i.max));
+const isSimpleBand = b => b.groups.length === 1 && !b.groups[0].name && b.groups[0].items.length === 1;
+const getSubj = id => S.subjects.find(s => s.id === id);
+const classStudents = cls => S.students.filter(s => s.cls === cls).sort((a, b) => arCmp(a.name, b.name));
+const allMonths = () => [...new Set([...S.settings.term1, ...S.settings.term2])];
+
+// ============ حسابات الدرجات ============
+const kM = (sid, sub, m) => `m|${sid}|${sub}|${m}`;
+const kY = (sid, sub) => `y|${sid}|${sub}`;
+function monthTotal(sid, subj, m) {
+  const r = S.grades.get(kM(sid, subj.id, m)); if (!r) return null;
+  let any = false, t = 0;
+  schemeItems(subj.scheme).forEach(i => { const v = r.s[i.id]; if (typeof v === 'number') { any = true; t += v; } });
+  return any ? t : null;
+}
+function monthValue(sid, subj, m) {
+  const t = monthTotal(sid, subj, m);
+  if (t !== null) return { v: t, src: 'detail' };
+  const y = S.grades.get(kY(sid, subj.id));
+  const o = y && y.months ? y.months[m] : undefined;
+  return (typeof o === 'number') ? { v: o, src: 'manual' } : { v: null, src: null };
+}
+function yearCalc(sid, subj) {
+  const st = S.settings, y = S.grades.get(kY(sid, subj.id)) || {};
+  const avg = arr => { const v = arr.filter(x => x !== null); return v.length ? rnd(sum(v) / v.length) : null; };
+  const a1 = avg(st.term1.map(m => monthValue(sid, subj, m).v));
+  const a2 = avg(st.term2.map(m => monthValue(sid, subj, m).v));
+  const mid = typeof y.mid === 'number' ? y.mid : null, fin = typeof y.fin === 'number' ? y.fin : null, sec = typeof y.sec === 'number' ? y.sec : null;
+  const effort = (a1 !== null && mid !== null && a2 !== null) ? rnd((a1 + mid + a2) / 3) : null;
+  const final = (effort !== null && fin !== null) ? rnd((effort + fin) / 2) : null;
+  const needSecond = final !== null && final < 50;
+  const final2 = (needSecond && sec !== null) ? rnd((effort + sec) / 2) : null;
+  return { a1, a2, mid, fin, sec, effort, final, needSecond, final2 };
+}
+
+// حفظ تلقائي مؤجل للدرجات
+const dirty = new Set(); let saveTimer = null;
+function markDirty(key) {
+  dirty.add(key); clearTimeout(saveTimer);
+  const sb = $('saveBar'); if (sb) sb.textContent = 'جاري الحفظ...';
+  saveTimer = setTimeout(flushSaves, 500);
+}
+async function flushSaves() {
+  clearTimeout(saveTimer); if (!dirty.size) return;
+  const keys = [...dirty]; dirty.clear();
+  const puts = [], dels = [];
+  keys.forEach(k => { const r = S.grades.get(k); if (r) puts.push(r); else dels.push(k); });
+  try {
+    if (puts.length) await dbPutMany('grades', puts);
+    if (dels.length) await dbDelMany('grades', dels);
+    const sb = $('saveBar'); if (sb) sb.innerHTML = ic('check') + ' تم الحفظ تلقائياً ' + new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { toast('تعذّر الحفظ: ' + e.message, 'bad'); }
+}
+window.addEventListener('visibilitychange', () => { if (document.hidden) flushSaves(); });
+window.addEventListener('pagehide', flushSaves);
+
+// ============ التنقل ============
+const TABS = [['home', 'الرئيسية', 'home'], ['students', 'الطلاب', 'users'], ['monthly', 'الدرجات الشهرية', 'edit'], ['yearly', 'السجل السنوي', 'book'],
+  ['exams', 'دفاتر الأسئلة', 'help'], ['timetable', 'الجدول الأسبوعي', 'grid'], ['seating', 'توزيع القاعات', 'seat'], ['settings', 'الإعدادات', 'gear']];
+function renderNav() {
+  $('nav').innerHTML = TABS.map(([id, label, icon]) => `<button class="${UI.tab === id ? 'on' : ''}" onclick="go('${id}')">${ic(icon)} ${label}</button>`).join('');
+}
+function go(tab) {
+  flushSaves(); UI.tab = tab; renderNav(); render(); window.scrollTo(0, 0);
+}
+function render() {
+  const st = S.settings;
+  $('hSchool').textContent = st.school; $('hYear').textContent = 'العام الدراسي ' + st.year;
+  const fn = { home: rHome, students: rStudents, monthly: rMonthly, yearly: rYearly, exams: rExams, timetable: rTimetable, seating: rSeating, settings: rSettings }[UI.tab];
+  $('view').innerHTML = fn();
+  const after = { monthly: afterMonthly, yearly: afterYearly }[UI.tab]; if (after) after();
+  fixStickyHeads();
+}
+function fixStickyHeads() {
+  document.querySelectorAll('#view table.t').forEach(t => {
+    const rows = t.tHead ? t.tHead.rows : [];
+    if (rows[0]) t.style.setProperty('--h1', rows[0].offsetHeight + 'px');
+    if (rows[1]) t.style.setProperty('--h2', (rows[0].offsetHeight + rows[1].offsetHeight) + 'px');
+  });
+}
+
+// ============ النافذة المنبثقة ============
+function openModal(title, body, foot) {
+  $('mTitle').textContent = title; $('mBody').innerHTML = body; $('mFoot').innerHTML = foot || '<button class="btn" onclick="closeModal()">إغلاق</button>';
+  $('modal').classList.remove('hidden');
+}
+function closeModal() { $('modal').classList.add('hidden'); }
+
+// ======================================================================
+//  الرئيسية
+// ======================================================================
+function rHome() {
+  const st = S.settings, h = new Date().getHours();
+  const steps = [
+    [S.classes.length > 0, 'أدخل معلومات المدرسة والصفوف', 'settings'],
+    [S.students.length > 0, 'أضف الطلاب (يدوياً أو من ملف Excel)', 'students'],
+    [S.subjects.length > 0, 'راجع المواد ونموذج درجات كل مادة', 'settings'],
+    [[...S.grades.keys()].some(k => k.startsWith('m|')), 'أدخل الدرجات الشهرية (تُحفظ تلقائياً)', 'monthly'],
+    [S.timetable.result !== null, 'ولّد الجدول الأسبوعي للحصص', 'timetable'],
+    [S.seating.result !== null, 'وزّع الطلاب على قاعات الامتحان', 'seating']
+  ];
+  return `
+  <div class="hero"><div class="g1">${h < 12 ? 'صباح الخير' : 'مساء الخير'}، أستاذ ${esc(st.teacher)}</div>
+    <div>${esc(st.school)}</div>
+    <div class="muted" style="color:#dfe8f3">${new Date().toLocaleDateString('ar-IQ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div></div>
+  <div class="stats">
+    <div class="stat"><b>${S.classes.length}</b><span>الصفوف</span></div>
+    <div class="stat"><b>${S.students.length}</b><span>الطلاب</span></div>
+    <div class="stat"><b>${S.subjects.length}</b><span>المواد</span></div>
+    <div class="stat" style="background:linear-gradient(145deg,#7c5800,#b8860b)"><b>${S.exams.length}</b><span>دفاتر الأسئلة</span></div>
+  </div>
+  <div class="card"><h2>خطوات العمل</h2><ul class="steps">
+    ${steps.map((s, i) => `<li class="${s[0] ? 'done' : ''}" onclick="go('${s[2]}')"><span class="n">${s[0] ? ic('check') : i + 1}</span><span>${s[1]}</span></li>`).join('')}
+  </ul></div>
+  <div class="card"><h2>الصفوف</h2>
+    ${S.classes.length ? `<div class="cls-cards">${S.classes.map((c, i) => `<div class="cls-card" onclick="UI.stuClass=S.classes[${i}];go('students')"><b>${esc(c)}</b><span class="muted">${classStudents(c).length} طالب</span></div>`).join('')}</div>`
+      : '<p class="muted">لا توجد صفوف بعد — أضفها من الإعدادات.</p>'}
+  </div>`;
+}
+
+// ======================================================================
+//  الطلاب
+// ======================================================================
+function rStudents() {
+  if (!S.classes.length) return `<div class="card"><h2>الطلاب</h2><div class="warn">أضف الصفوف أولاً من تبويب الإعدادات.</div><button class="btn p" onclick="go('settings')">الذهاب للإعدادات</button></div>`;
+  if (UI.stuClass && !S.classes.includes(UI.stuClass)) UI.stuClass = '';
+  const addCls = UI.stuClass || S.classes[0];
+  const q = UI.stuSearch.trim();
+  let list = S.students.filter(s => (!UI.stuClass || s.cls === UI.stuClass) && (!q || s.name.includes(q) || String(s.num || '').includes(q)));
+  list.sort((a, b) => arCmp(a.cls, b.cls) || arCmp(a.name, b.name));
+  return `
+  <div class="card"><h2>إضافة طالب</h2>
+    <div class="row">
+      <div class="f" style="flex:2 1 220px"><label>الاسم الكامل</label><input class="in" id="stName" placeholder="اسم الطالب/ة" onkeydown="if(event.key==='Enter')addStudent()"></div>
+      <div class="f"><label>الصف</label><select class="in" id="stCls">${opts(S.classes, addCls)}</select></div>
+      <div class="f"><label>رقم القيد (اختياري)</label><input class="in" id="stNum" inputmode="numeric"></div>
+      <div><button class="btn g" onclick="addStudent()">${ic('plus')} إضافة</button></div>
+    </div>
+    <details style="margin-top:.8rem"><summary style="cursor:pointer;font-weight:700;color:var(--pri)">إضافة قائمة أسماء دفعة واحدة (اسم في كل سطر)</summary>
+      <div class="row" style="margin-top:.5rem">
+        <div class="f" style="flex:3 1 260px"><textarea class="in" id="bulkNames" placeholder="فاطمة علي حسين&#10;زينب محمد جاسم&#10;..."></textarea></div>
+        <div class="f"><label>إلى الصف</label><select class="in" id="bulkCls">${opts(S.classes, addCls)}</select>
+          <button class="btn g" style="margin-top:.5rem;width:100%" onclick="addBulk()">${ic('plus')} إضافة القائمة</button></div>
+      </div>
+    </details>
+  </div>
+  <div class="card"><h2>الاستيراد من Excel</h2>
+    <p class="muted">ملف Excel (xlsx) أو CSV، والأعمدة: <b>الاسم</b> ، <b>الصف</b> ، <b>رقم القيد</b> (الأخير اختياري). الصفوف الجديدة تُضاف تلقائياً. إذا كان عمود الصف فارغاً يوضع الطالب في الصف المختار هنا.</p>
+    <div class="row">
+      <div class="f"><label>الصف الافتراضي</label><select class="in" id="impCls">${opts(S.classes, addCls)}</select></div>
+      <div class="btns">
+        <label class="btn b">${ic('up')} اختيار ملف<input type="file" accept=".xlsx,.csv,.txt" class="hidden" onchange="importStudents(this)"></label>
+        <button class="btn" onclick="downloadStudentTemplate()">${ic('down')} تنزيل نموذج Excel فارغ</button>
+      </div>
+    </div>
+  </div>
+  <div class="card"><h2>قائمة الطلاب (${list.length})</h2>
+    <div class="row">
+      <div class="f"><select class="in" onchange="UI.stuClass=this.value;render()">${opts([['', 'كل الصفوف'], ...S.classes], UI.stuClass)}</select></div>
+      <div class="f"><input class="in" placeholder="بحث بالاسم أو القيد" value="${esc(UI.stuSearch)}" oninput="UI.stuSearch=this.value;clearTimeout(window._sT);window._sT=setTimeout(()=>{render();const e=document.getElementById('stSearch');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length)}},350)" id="stSearch"></div>
+      <div class="btns" style="margin:0"><button class="btn g" onclick="exportStudents()">${ic('xls')} Excel</button><button class="btn" onclick="printStudents()">${ic('print')} طباعة</button></div>
+    </div>
+    ${list.length ? `<div class="tw" style="margin-top:.6rem"><table class="t"><thead><tr><th>ت</th><th class="nm">الاسم</th><th>الصف</th><th>رقم القيد</th><th>إجراءات</th></tr></thead><tbody>
+      ${list.map((s, i) => `<tr><td class="no">${i + 1}</td><td class="nm">${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(s.num || '-')}</td>
+      <td><button class="btn sm" onclick="editStudent('${s.id}')">${ic('edit')}</button> <button class="btn sm r" onclick="deleteStudent('${s.id}')">${ic('trash')}</button></td></tr>`).join('')}
+    </tbody></table></div>` : '<p class="muted" style="margin-top:.6rem">لا يوجد طلاب مطابقون.</p>'}
+  </div>`;
+}
+function nextNum(cls) {
+  const nums = S.students.filter(s => s.cls === cls).map(s => parseInt(s.num) || 0);
+  return nums.length ? Math.max(...nums) + 1 : 1;
+}
+async function addStudent() {
+  const name = $('stName').value.trim().replace(/\s+/g, ' '), cls = $('stCls').value;
+  if (!name) return toast('اكتب اسم الطالب', 'bad');
+  if (S.students.some(s => s.cls === cls && s.name === name)) return toast('هذا الاسم موجود مسبقاً في الصف نفسه', 'bad');
+  const st = { id: uid(), name, cls, num: $('stNum').value.trim() || String(nextNum(cls)) };
+  S.students.push(st); await dbPut('students', st);
+  UI.stuClass = cls; render(); setTimeout(() => $('stName') && $('stName').focus(), 50);
+  toast('تمت إضافة ' + name);
+}
+async function addBulk() {
+  const cls = $('bulkCls').value;
+  const names = $('bulkNames').value.split(/\n/).map(x => x.trim().replace(/^\d+[\s.\-)]+/, '').replace(/\s+/g, ' ')).filter(Boolean);
+  const added = [];
+  names.forEach(name => {
+    if (S.students.some(s => s.cls === cls && s.name === name) || added.some(a => a.name === name)) return;
+    const st = { id: uid(), name, cls, num: '' }; added.push(st); S.students.push(st);
+  });
+  let n = Math.max(0, ...S.students.filter(s => s.cls === cls && !added.includes(s)).map(s => parseInt(s.num) || 0));
+  added.forEach(st => st.num = String(++n));
+  await dbPutMany('students', added);
+  UI.stuClass = cls; render(); toast(`تمت إضافة ${added.length} طالب`);
+}
+function editStudent(id) {
+  const s = S.students.find(x => x.id === id); if (!s) return;
+  openModal('تعديل بيانات الطالب', `
+    <div class="row"><div class="f" style="flex-basis:100%"><label>الاسم</label><input class="in" id="eName" value="${esc(s.name)}"></div>
+    <div class="f"><label>الصف</label><select class="in" id="eCls">${opts(S.classes, s.cls)}</select></div>
+    <div class="f"><label>رقم القيد</label><input class="in" id="eNum" value="${esc(s.num || '')}"></div></div>
+    <p class="muted" style="margin-top:.6rem">نقل الطالب لصف آخر يحتفظ بدرجاته.</p>`,
+    `<button class="btn g" onclick="saveStudentEdit('${id}')">${ic('check')} حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button>`);
+}
+async function saveStudentEdit(id) {
+  const s = S.students.find(x => x.id === id); const name = $('eName').value.trim();
+  if (!name) return toast('الاسم مطلوب', 'bad');
+  s.name = name; s.cls = $('eCls').value; s.num = $('eNum').value.trim();
+  await dbPut('students', s); closeModal(); render(); toast('تم الحفظ');
+}
+async function deleteStudent(id) {
+  const s = S.students.find(x => x.id === id);
+  if (!confirm(`حذف "${s.name}" وجميع درجاته؟`)) return;
+  S.students = S.students.filter(x => x.id !== id);
+  const keys = [...S.grades.keys()].filter(k => k.split('|')[1] === id);
+  keys.forEach(k => S.grades.delete(k));
+  await dbDel('students', id); if (keys.length) await dbDelMany('grades', keys);
+  render(); toast('تم الحذف');
+}
+function findCol(header, words) { return header.findIndex(h => words.some(w => String(h || '').replace(/\s/g, '').includes(w))); }
+async function importStudents(input) {
+  const file = input.files[0]; input.value = ''; if (!file) return;
+  try {
+    const sheets = await readSpreadsheet(file);
+    const defCls = $('impCls').value; let added = 0, skipped = 0; const newClasses = [];
+    for (const sh of sheets) {
+      const rows = sh.rows.filter(r => r && r.some(c => String(c ?? '').trim() !== ''));
+      if (!rows.length) continue;
+      let hi = rows.findIndex(r => findCol(r, ['الاسم', 'اسم', 'الأسماء', 'الاسماء']) >= 0);
+      let cName = 0, cCls = -1, cNum = -1, start = 0;
+      if (hi >= 0 && hi < 5) {
+        const h = rows[hi]; cName = findCol(h, ['الاسم', 'اسم', 'الأسماء', 'الاسماء']); cCls = findCol(h, ['الصف', 'الشعبة', 'صف']); cNum = findCol(h, ['القيد', 'قيد', 'رقم']); start = hi + 1;
+        if (cNum === cName) cNum = -1;
+      } else if (sheets.length > 1) continue;
+      for (const r of rows.slice(start)) {
+        const name = String(r[cName] ?? '').trim().replace(/\s+/g, ' ');
+        if (!name || /^\d+$/.test(name)) { skipped++; continue; }
+        const cls = (cCls >= 0 && String(r[cCls] ?? '').trim()) ? String(r[cCls]).trim() : defCls;
+        if (!S.classes.includes(cls)) { S.classes.push(cls); newClasses.push(cls); }
+        if (S.students.some(s => s.cls === cls && s.name === name)) { skipped++; continue; }
+        const st = { id: uid(), name, cls, num: cNum >= 0 ? String(r[cNum] ?? '').trim() : '' };
+        if (!st.num) st.num = String(nextNum(cls));
+        S.students.push(st); await dbPut('students', st); added++;
+      }
+    }
+    if (newClasses.length) await saveMeta('classes');
+    render();
+    toast(`تم استيراد ${added} طالب${skipped ? ` (تم تخطي ${skipped} سطر مكرر أو فارغ)` : ''}${newClasses.length ? ' • صفوف جديدة: ' + newClasses.join('، ') : ''}`);
+  } catch (e) { toast('تعذّر قراءة الملف: ' + e.message, 'bad'); }
+}
+function downloadStudentTemplate() {
+  saveFile(makeXLSXBlob([{ name: 'الطلاب', rows: [['الاسم', 'الصف', 'رقم القيد'].map(v => ({ v, h: 1 })), [S.classes[0] ? 'مثال: فاطمة علي حسين' : 'فاطمة علي حسين', S.classes[0] || 'السادس', 1]] }]), 'نموذج_الطلاب.xlsx');
+}
+function studentsListHTML() {
+  const list = S.students.filter(s => !UI.stuClass || s.cls === UI.stuClass).sort((a, b) => arCmp(a.cls, b.cls) || arCmp(a.name, b.name));
+  const head = `<div class="ph"><div class="l1">${esc(S.settings.school)}</div><div class="l2">قائمة أسماء ${pupilsAl()} ${UI.stuClass ? '— الصف ' + esc(UI.stuClass) : ''}</div><div>للعام الدراسي ${esc(S.settings.year)}</div></div>`;
+  return sheetsJoin(paginate(list).map(pg => head + `<table class="pt"><thead><tr><th>ت</th><th>الاسم</th><th>الصف</th><th>رقم القيد</th></tr></thead><tbody>
+    ${pg.items.map((s, i) => `<tr><td>${pg.start + i + 1}</td><td class="nm">${esc(s.name)}</td><td>${esc(s.cls)}</td><td>${esc(s.num || '')}</td></tr>`).join('')}</tbody></table>`), 'portrait');
+}
+function printStudents() { const h = studentsListHTML(); if (!h) return toast('لا يوجد طلاب', 'bad'); showPrint('قائمة الطلاب', h, { portrait: true, xlsxName: 'قائمة_الطلاب' }); }
+function exportStudents() { saveFile(xlsxFromHTML([{ name: 'الطلاب', html: studentsListHTML(), landscape: false }]), 'قائمة_الطلاب.xlsx'); }
+
+// ======================================================================
+//  الدرجات الشهرية
+// ======================================================================
+function pickDefaults(kind) {
+  if (!S.subjects.find(s => s.id === UI[kind + 'Subj'])) UI[kind + 'Subj'] = S.subjects[0] ? S.subjects[0].id : '';
+  if (!S.classes.includes(UI[kind + 'Class'])) UI[kind + 'Class'] = S.classes[0] || '';
+}
+function needSetup() {
+  if (!S.classes.length || !S.subjects.length) return `<div class="card"><div class="warn">أضف الصفوف والمواد أولاً من الإعدادات.</div><button class="btn p" onclick="go('settings')">الإعدادات</button></div>`;
+  if (!S.students.length) return `<div class="card"><div class="warn">لا يوجد طلاب بعد.</div><button class="btn p" onclick="go('students')">إضافة الطلاب</button></div>`;
+  return '';
+}
+function rMonthly() {
+  const ns = needSetup(); if (ns) return ns;
+  pickDefaults('m');
+  const months = allMonths();
+  if (!months.includes(UI.mMonth)) { const cur = MONTH_NAMES[new Date().getMonth()]; UI.mMonth = months.includes(cur) ? cur : months[0]; }
+  const subj = getSubj(UI.mSubj), studs = classStudents(UI.mClass);
+  return `
+  <div class="card"><h2>الدرجات الشهرية</h2>
+    <div class="row">
+      <div class="f"><label>المادة</label><select class="in" onchange="UI.mSubj=this.value;render()">${opts(S.subjects.map(s => [s.id, s.name]), UI.mSubj)}</select></div>
+      <div class="f"><label>الصف</label><select class="in" onchange="UI.mClass=this.value;render()">${opts(S.classes, UI.mClass)}</select></div>
+      <div class="f"><label>الشهر</label><select class="in" onchange="UI.mMonth=this.value;render()">${opts(months, UI.mMonth)}</select></div>
+      <div class="f"><label>اتجاه الانتقال بزر Enter</label><select class="in" onchange="UI.dir=this.value">${opts([['h', 'أفقي (طالب بطالب)'], ['v', 'عمودي (مادة بمادة)']], UI.dir)}</select></div>
+    </div>
+    <div class="btns">
+      <button class="btn p" onclick="printMonthly(false)">${ic('print')} طباعة الكشف</button>
+      <button class="btn" onclick="printMonthly(true)">${ic('print')} استمارة فارغة للكتابة اليدوية</button>
+      <button class="btn g" onclick="exportMonthly()">${ic('xls')} Excel</button>
+    </div>
+    <div class="hint">اكتب الدرجة (تقبل الكسور مثل 4.5 والأرقام العربية)، والمجاميع تُحسب فوراً، <b>والحفظ تلقائي</b> — لا حاجة لزر حفظ. المجموع الشهري يُنقل تلقائياً إلى السجل السنوي.</div>
+    <div class="savebar" id="saveBar"></div>
+  </div>
+  <div class="card">${studs.length ? `<div class="tw">${monthlyTableHTML(subj, studs, UI.mMonth, 'edit')}</div>
+    <div class="legend"><span><i style="background:var(--sub)"></i>مجموع القسم</span><span><i style="background:var(--tot)"></i>المجموع الكلي (${schemeMax(subj.scheme)})</span><span id="mStats"></span></div>`
+    : `<p class="muted">لا يوجد طلاب في الصف ${esc(UI.mClass)}.</p>`}</div>`;
+}
+const vt = t => `<span class="vt">${esc(t)}</span>`;
+const perPage = () => Math.max(5, Math.min(60, Math.round(+S.settings.perPage || 20)));
+// تقسيم القائمة إلى صفحات بعدد ثابت — لا صفحة فارغة إلا للاستمارة اليدوية بلا طلاب
+function paginate(list, blank) {
+  const n = perPage(), out = [];
+  for (let i = 0; i < list.length; i += n) out.push({ start: i, items: list.slice(i, i + n) });
+  if (!out.length && blank) out.push({ start: 0, items: [] });
+  return out;
+}
+function sheetsJoin(inners, cls = '') {
+  return inners.map((h, i) => `<div class="sheet ${cls}${i < inners.length - 1 ? ' pbreak' : ''}">${h}${inners.length > 1 ? `<div class="pno">صفحة ${i + 1} من ${inners.length}</div>` : ''}</div>`).join('');
+}
+function monthlyTableHTML(subj, studs, month, mode, start = 0, pad = 0) {
+  const sc = subj.scheme, edit = mode === 'edit', blank = mode === 'blank', P = mode !== 'edit';
+  const depth = sc.bands.some(b => !isSimpleBand(b) && b.groups.some(g => g.name)) ? 3 : 2;
+  let r1 = `<th rowspan="${depth}">ت</th><th rowspan="${depth}" class="nm">${P ? 'الأســماء' : 'الاسم'}</th>`, r2 = '', r3 = '';
+  const mx = m => `<small> ${m}</small>`;
+  sc.bands.forEach(b => {
+    if (isSimpleBand(b)) { r1 += `<th rowspan="${depth}">${vt(b.name)}${mx(b.groups[0].items[0].max)}</th>`; }
+    else {
+      r1 += `<th colspan="${bandItems(b).length}" class="band">${esc(b.name)}</th>`;
+      b.groups.forEach(g => {
+        if (g.name) { r2 += `<th colspan="${g.items.length}" class="grp">${esc(g.name)}</th>`; g.items.forEach(i => r3 += `<th>${vt(i.name)}${mx(i.max)}</th>`); }
+        else g.items.forEach(i => r2 += `<th rowspan="${depth - 1}">${vt(i.name)}${mx(i.max)}</th>`);
+      });
+    }
+    if (b.total && !isSimpleBand(b)) r1 += `<th rowspan="${depth}" class="subh">${vt('مجموع ' + b.name)}${mx(bandMax(b))}</th>`;
+  });
+  r1 += `<th rowspan="${depth}" class="toth">${vt('المجموع')}${mx(schemeMax(sc))}</th>`;
+  let html = `<table class="${edit ? 't' : 'pt'}" id="${edit ? 'mt' : ''}"><thead><tr>${r1}</tr><tr>${r2}</tr>${depth === 3 ? `<tr>${r3}</tr>` : ''}</thead><tbody>`;
+  const rows = Math.max(studs.length, pad);
+  for (let i = 0; i < rows; i++) {
+    const s = studs[i];
+    const rec = s && !blank ? S.grades.get(kM(s.id, subj.id, month)) : null;
+    const val = it => rec && typeof rec.s[it.id] === 'number' ? rec.s[it.id] : null;
+    html += `<tr><td class="no">${start + i + 1}</td><td class="nm">${s ? esc(s.name) : ''}</td>`;
+    let tot = 0, any = false;
+    sc.bands.forEach(b => {
+      let bt = 0, bany = false;
+      bandItems(b).forEach(it => {
+        const v = val(it); if (v !== null) { bt += v; bany = true; }
+        html += edit ? `<td><input class="g" inputmode="decimal" autocomplete="off" value="${v === null ? '' : v}" data-sid="${s.id}" data-col="${it.id}" data-max="${it.max}" oninput="mInput(this)" onkeydown="gradeKey(event)" onfocus="this.select()"></td>`
+          : `<td>${v === null ? '' : fmt(v)}</td>`;
+      });
+      if (b.total && !isSimpleBand(b)) html += `<td class="sub" id="${edit ? `sb_${s.id}_${b.id}` : ''}">${bany ? fmt(bt) : ''}</td>`;
+      tot += bt; any = any || bany;
+    });
+    html += `<td class="tot" id="${edit ? 'tt_' + s.id : ''}">${any ? fmt(tot) : ''}</td></tr>`;
+  }
+  return html + '</tbody></table>';
+}
+function afterMonthly() { updateMonthlyStats(); }
+function updateMonthlyStats() {
+  const el = $('mStats'); if (!el) return;
+  const subj = getSubj(UI.mSubj), studs = classStudents(UI.mClass);
+  const tots = studs.map(s => monthTotal(s.id, subj, UI.mMonth)).filter(v => v !== null);
+  el.textContent = `أُدخلت درجات ${tots.length} من ${studs.length}` + (tots.length ? ` • معدل الصف ${fmt(sum(tots) / tots.length)} • الناجحون ${tots.filter(t => t >= 50).length}` : '');
+}
+function mInput(el) {
+  const v = toNum(el.value), max = +el.dataset.max;
+  const bad = v !== null && (isNaN(v) || v < 0 || v > max);
+  el.classList.toggle('bad', bad);
+  const sid = el.dataset.sid, subj = getSubj(UI.mSubj), key = kM(sid, subj.id, UI.mMonth);
+  const rec = S.grades.get(key) || { key, sid, subj: subj.id, month: UI.mMonth, s: {} };
+  if (v === null || bad) delete rec.s[el.dataset.col]; else rec.s[el.dataset.col] = v;
+  if (Object.keys(rec.s).length) S.grades.set(key, rec); else S.grades.delete(key);
+  markDirty(key);
+  // تحديث المجاميع
+  subj.scheme.bands.forEach(b => {
+    const c = $(`sb_${sid}_${b.id}`); if (!c) return;
+    const vals = bandItems(b).map(i => rec.s[i.id]).filter(x => typeof x === 'number');
+    c.textContent = vals.length ? fmt(sum(vals)) : '';
+  });
+  const t = monthTotal(sid, subj, UI.mMonth); $('tt_' + sid).textContent = t === null ? '' : fmt(t);
+  updateMonthlyStats();
+}
+function gradeKey(e) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const t = e.target, all = [...t.closest('table').querySelectorAll('input.g:not([disabled])')];
+  let next;
+  if (UI.dir === 'h') next = all[all.indexOf(t) + 1];
+  else {
+    const cols = [...new Set(all.map(x => x.dataset.col))];
+    const same = all.filter(x => x.dataset.col === t.dataset.col);
+    next = same[same.indexOf(t) + 1] || all.find(x => x.dataset.col === cols[cols.indexOf(t.dataset.col) + 1]);
+  }
+  if (next) { next.focus(); next.select(); next.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+}
+function monthlySheet(blank) {
+  const subj = getSubj(UI.mSubj), studs = classStudents(UI.mClass), st = S.settings;
+  const head = `<div class="ph"><div class="l1">درجات ${esc(subj.name)} ل${pupils()} الصف ${esc(UI.mClass)} لشهر ( ${blank ? '..............' : esc(UI.mMonth)} )</div><div class="l2">للعام الدراسي ( ${esc(st.year)}م )</div></div>`;
+  return sheetsJoin(paginate(studs, blank).map(pg => head + monthlyTableHTML(subj, pg.items, UI.mMonth, blank ? 'blank' : 'print', pg.start, blank ? perPage() : 0)
+    + `<div class="sig"><div>معلم المادة<br>${esc(st.teacher)}</div></div>`), 'portrait');
+}
+function printMonthly(blank) {
+  flushSaves(); const subj = getSubj(UI.mSubj), html = monthlySheet(blank);
+  if (!html) return toast('لا يوجد طلاب في هذا الصف', 'bad');
+  showPrint(`درجات ${subj.name} - ${UI.mClass} - ${UI.mMonth}`, html, { portrait: true, xlsxName: `درجات_${subj.name}_${UI.mClass}_${UI.mMonth}` });
+}
+function exportMonthly() { const subj = getSubj(UI.mSubj); saveFile(xlsxFromHTML([{ name: UI.mMonth, html: monthlySheet(false), landscape: false }]), `درجات_${subj.name}_${UI.mClass}_${UI.mMonth}.xlsx`); }
+
+// ======================================================================
+//  السجل السنوي
+// ======================================================================
+function rYearly() {
+  const ns = needSetup(); if (ns) return ns;
+  pickDefaults('y');
+  const subj = getSubj(UI.ySubj), studs = classStudents(UI.yClass);
+  return `
+  <div class="card"><h2>السجل السنوي (قائمة درجات الامتحانات الشهرية)</h2>
+    <div class="row">
+      <div class="f"><label>المادة</label><select class="in" onchange="UI.ySubj=this.value;render()">${opts(S.subjects.map(s => [s.id, s.name]), UI.ySubj)}</select></div>
+      <div class="f"><label>الصف</label><select class="in" onchange="UI.yClass=this.value;render()">${opts(S.classes, UI.yClass)}</select></div>
+    </div>
+    <div class="btns">
+      <button class="btn p" onclick="printYearly(false)">${ic('print')} طباعة السجل</button>
+      <button class="btn" onclick="printYearly(true)">${ic('print')} استمارة فارغة</button>
+      <button class="btn g" onclick="exportYearly()">${ic('xls')} Excel</button>
+    </div>
+    <div class="hint"><b>الخلايا الزرقاء</b> تُسحب تلقائياً من الدرجات الشهرية. إذا لم تُدخل تفاصيل شهر ما يمكنك كتابة مجموعه هنا مباشرة.
+      أنت تكتب فقط: <b>نصف السنة</b> و<b>الامتحان النهائي</b> و<b>الدور الثاني</b> — والباقي يُحسب:<br>
+      معدل الفصل = معدل أشهره • السعي السنوي = (معدل الفصل الأول + نصف السنة + معدل الفصل الثاني) ÷ 3 •
+      الدرجة النهائية = (السعي + النهائي) ÷ 2 • من تقل درجته عن 50 يدخل الدور الثاني: النهائية = (السعي + الدور الثاني) ÷ 2
+      ${S.settings.round ? ' • الكسور تُقرّب لأقرب عدد صحيح' : ''}</div>
+    <div class="savebar" id="saveBar"></div>
+  </div>
+  <div class="card">${studs.length ? `<div class="tw">${yearlyTableHTML(subj, studs, 'edit')}</div><div class="legend" id="yStats"></div>` : `<p class="muted">لا يوجد طلاب في الصف ${esc(UI.yClass)}.</p>`}</div>`;
+}
+function yearlyTableHTML(subj, studs, mode, start = 0, pad = 0) {
+  const st = S.settings, edit = mode === 'edit', blank = mode === 'blank';
+  const T1 = st.term1, T2 = st.term2;
+  const h = (t, cls = '') => `<th rowspan="2" class="${cls}">${vt(t)}</th>`;
+  let head = `<tr><th rowspan="2">ت</th><th rowspan="2">رقم القيد</th><th rowspan="2" class="nm">أسماء ${pupilsAl()}</th>
+    <th colspan="${T1.length}" class="band">الفصل الأول</th>${h('معدل الفصل الأول', 'subh')}${h('نصف السنة')}
+    <th colspan="${T2.length}" class="band">الفصل الثاني</th>${h('معدل الفصل الثاني', 'subh')}${h('السعي السنوي', 'subh')}${h('الامتحان النهائي')}${h('الدرجة النهائية', 'toth')}${h('درجة الدور الثاني')}${h('النهائية بعد الدور الثاني', 'toth')}</tr>
+    <tr>${T1.map(m => `<th>${vt(m)}</th>`).join('')}${T2.map(m => `<th>${vt(m)}</th>`).join('')}</tr>`;
+  let body = '';
+  const rows = Math.max(studs.length, pad);
+  for (let i = 0; i < rows; i++) {
+    const s = studs[i];
+    if (!s || blank) { body += `<tr><td>${start + i + 1}</td><td>${s ? esc(s.num || '') : ''}</td><td class="nm">${s ? esc(s.name) : ''}</td>${'<td></td>'.repeat(T1.length + T2.length + 9)}</tr>`; continue; }
+    const c = yearCalc(s.id, subj), y = S.grades.get(kY(s.id, subj.id)) || {};
+    const monthCell = m => {
+      const mv = monthValue(s.id, subj, m);
+      if (!edit) return `<td>${fmt(mv.v)}</td>`;
+      if (mv.src === 'detail') return `<td class="auto" title="من الدرجات الشهرية">${fmt(mv.v)}</td>`;
+      return `<td><input class="g" inputmode="decimal" data-sid="${s.id}" data-col="m:${esc(m)}" data-kind="month" data-m="${esc(m)}" data-max="100" value="${mv.v ?? ''}" oninput="yInput(this)" onkeydown="gradeKey(event)" onfocus="this.select()"></td>`;
+    };
+    const inp = (kind, v) => edit ? `<td><input class="g" inputmode="decimal" data-sid="${s.id}" data-col="${kind}" data-kind="${kind}" data-max="100" value="${v ?? ''}" oninput="yInput(this)" onkeydown="gradeKey(event)" onfocus="this.select()"></td>` : `<td>${fmt(v)}</td>`;
+    const res = (v, id) => `<td class="${v === null ? 'calc' : v < 50 ? 'fail' : 'pass'}" id="${edit ? id : ''}">${fmt(v)}</td>`;
+    body += `<tr><td class="no">${start + i + 1}</td><td>${esc(s.num || '')}</td><td class="nm">${esc(s.name)}</td>
+      ${T1.map(monthCell).join('')}<td class="calc" id="${edit ? 'a1_' + s.id : ''}">${fmt(c.a1)}</td>${inp('mid', y.mid)}
+      ${T2.map(monthCell).join('')}<td class="calc" id="${edit ? 'a2_' + s.id : ''}">${fmt(c.a2)}</td>
+      <td class="calc" id="${edit ? 'ef_' + s.id : ''}">${fmt(c.effort)}</td>${inp('fin', y.fin)}${res(c.final, 'fn_' + s.id)}${inp('sec', y.sec)}${res(c.final2, 'f2_' + s.id)}</tr>`;
+  }
+  return `<table class="${edit ? 't' : 'pt'}"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+function afterYearly() { updateYearlyStats(); }
+function updateYearlyStats() {
+  const el = $('yStats'); if (!el) return;
+  const subj = getSubj(UI.ySubj), studs = classStudents(UI.yClass);
+  const cs = studs.map(s => yearCalc(s.id, subj));
+  const done = cs.filter(c => c.final !== null);
+  el.innerHTML = `<span><i style="background:#eef6ff"></i>منقولة من الشهري</span><span><i style="background:#e5f4e7"></i>ناجح</span><span><i style="background:#fdecec"></i>راسب / دور ثانٍ</span>
+    <span>اكتملت النتيجة: ${done.length} من ${studs.length}${done.length ? ` • ناجح ${done.filter(c => c.final >= 50).length} • دور ثانٍ ${done.filter(c => c.final < 50).length}` : ''}</span>`;
+}
+function yInput(el) {
+  const v = toNum(el.value), bad = v !== null && (isNaN(v) || v < 0 || v > 100);
+  el.classList.toggle('bad', bad);
+  const sid = el.dataset.sid, subj = getSubj(UI.ySubj), key = kY(sid, subj.id), kind = el.dataset.kind;
+  const rec = S.grades.get(key) || { key, sid, subj: subj.id, months: {} };
+  rec.months = rec.months || {};
+  const val = (v === null || bad) ? undefined : v;
+  if (kind === 'month') { if (val === undefined) delete rec.months[el.dataset.m]; else rec.months[el.dataset.m] = val; }
+  else { if (val === undefined) delete rec[kind]; else rec[kind] = val; }
+  const empty = !Object.keys(rec.months).length && ['mid', 'fin', 'sec'].every(k => rec[k] === undefined);
+  if (empty) S.grades.delete(key); else S.grades.set(key, rec);
+  markDirty(key);
+  const c = yearCalc(sid, subj);
+  const setRes = (id, v) => { const e = $(id); if (!e) return; e.textContent = fmt(v); if (id.startsWith('f')) e.className = v === null ? 'calc' : v < 50 ? 'fail' : 'pass'; };
+  setRes('a1_' + sid, c.a1); setRes('a2_' + sid, c.a2); setRes('ef_' + sid, c.effort); setRes('fn_' + sid, c.final); setRes('f2_' + sid, c.final2);
+  updateYearlyStats();
+}
+function yearlySheet(blank) {
+  const subj = getSubj(UI.ySubj), studs = classStudents(UI.yClass), st = S.settings;
+  const head = `<div class="ph3"><div>إدارة ${esc(st.school)}</div>
+    <div class="c">قائمة درجات الامتحانات الشهرية<div style="font-size:11pt">للعام الدراسي ${esc(st.year)}م</div></div>
+    <div style="text-align:left">الصف: ${esc(UI.yClass)}<br>المادة: ${esc(subj.name)}</div></div>`;
+  return sheetsJoin(paginate(studs, blank).map(pg => head + yearlyTableHTML(subj, pg.items, blank ? 'blank' : 'print', pg.start, blank ? perPage() : 0)
+    + `<div class="sig"><div>معلم المادة<br>${esc(st.teacher)}</div><div>مدير المدرسة<br>${esc(st.principal)}</div></div>`));
+}
+function printYearly(blank) {
+  flushSaves(); const subj = getSubj(UI.ySubj), html = yearlySheet(blank);
+  if (!html) return toast('لا يوجد طلاب في هذا الصف', 'bad');
+  showPrint(`السجل السنوي - ${subj.name} - ${UI.yClass}`, html, { xlsxName: `السجل_السنوي_${subj.name}_${UI.yClass}` });
+}
+function exportYearly() { const subj = getSubj(UI.ySubj); saveFile(xlsxFromHTML([{ name: 'السجل السنوي', html: yearlySheet(false) }]), `السجل_السنوي_${subj.name}_${UI.yClass}.xlsx`); }
+
+// ======================================================================
+//  دفاتر الأسئلة
+// ======================================================================
+const Q_TYPES = { mcq: 'اختيار من متعدد', tf: 'صح أم خطأ', fill: 'أكمل الفراغ', match: 'صِل بين المجموعتين', essay: 'أجب عمّا يأتي', define: 'عرِّف ما يأتي' };
+const EXAM_KINDS = [['monthly', 'امتحان شهري'], ['mid', 'امتحان نصف السنة'], ['final', 'امتحان نهاية السنة'], ['second', 'امتحان الدور الثاني']];
+const newQ = () => ({ id: uid(), type: 'essay', marks: 10, topic: '', text: '', options: ['', '', '', ''], a: ['', '', '', ''], b: ['', '', '', ''], answer: '' });
+const examLabel = e => e.kind === 'monthly' ? 'امتحان شهر ' + e.month : (EXAM_KINDS.find(k => k[0] === e.kind) || [, ''])[1];
+let refText = '', refName = '';
+
+function rExams() {
+  if (!S.subjects.length) return needSetup();
+  if (UI.exam) return examEditorHTML();
+  return `<div class="card"><h2>دفاتر الأسئلة</h2>
+    <button class="btn g" onclick="newExam()">${ic('plus')} دفتر أسئلة جديد</button>
+    <div style="margin-top:.8rem">${S.exams.length ? S.exams.slice().sort((a, b) => (b.updated || '').localeCompare(a.updated || '')).map(e => {
+      const subj = getSubj(e.subj);
+      return `<div class="li" style="border-right-color:var(--acc)"><div><b>${esc(examLabel(e))} — ${esc(subj ? subj.name : '')}</b> ${e.cls ? '<span class="muted">| ' + esc(e.cls) + '</span>' : ''}<br>
+        <span class="muted">${e.qs.length} سؤال • ${sum(e.qs.map(q => q.marks))} درجة • ${esc(e.time)}</span></div>
+        <div class="acts"><button class="btn sm p" onclick="openExam('${e.id}')">${ic('edit')} فتح</button>
+        <button class="btn sm" onclick="printExam('${e.id}',false)">${ic('print')} أسئلة</button>
+        <button class="btn sm g" onclick="printExam('${e.id}',true)">${ic('print')} مع الأجوبة</button>
+        <button class="btn sm y" onclick="wordExam('${e.id}',false)">${ic('doc')} Word</button>
+        <button class="btn sm r" onclick="deleteExam('${e.id}')">${ic('trash')}</button></div></div>`;
+    }).join('') : '<p class="muted">لا توجد دفاتر أسئلة محفوظة.</p>'}</div></div>`;
+}
+function newExam() {
+  const cur = MONTH_NAMES[new Date().getMonth()];
+  UI.exam = { id: uid(), subj: S.subjects[0].id, cls: S.classes[0] || '', kind: 'monthly', month: allMonths().includes(cur) ? cur : allMonths()[0], time: 'ساعة واحدة', qs: [newQ(), newQ(), newQ()], isNew: true };
+  render();
+}
+function openExam(id) { UI.exam = clone(S.exams.find(e => e.id === id)); render(); }
+function examEditorHTML() {
+  const e = UI.exam, total = sum(e.qs.map(q => q.marks));
+  const qHTML = (q, i) => `<div class="band-box" style="border-right:4px solid var(--sec)">
+    <div class="row" style="align-items:center">
+      <b style="color:var(--pri)">السؤال ${Q_ORD[i] || i + 1}</b>
+      <div class="f"><select class="in" onchange="qSet(${i},'type',this.value,true)">${opts(Object.entries(Q_TYPES), q.type)}</select></div>
+      <div class="f" style="flex:0 0 110px"><input class="in" type="number" min="0" value="${q.marks}" onchange="qSet(${i},'marks',+this.value||0,true)" title="الدرجة"></div>
+      <button class="btn sm" onclick="qMove(${i},-1)" ${i === 0 ? 'disabled' : ''}>▲</button><button class="btn sm" onclick="qMove(${i},1)" ${i === e.qs.length - 1 ? 'disabled' : ''}>▼</button>
+      <button class="btn sm r" onclick="qDel(${i})">${ic('trash')}</button>
+    </div>
+    <div class="row" style="margin-top:.5rem"><div class="f" style="flex:3 1 240px"><input class="in" placeholder="موضوع السؤال للذكاء الاصطناعي (مثال: الجملة الاسمية)" value="${esc(q.topic)}" onchange="qSet(${i},'topic',this.value)"></div>
+      <button class="btn y" id="ai${i}" onclick="aiQuestion(${i})">${ic('magic')} توليد</button></div>
+    <div class="f" style="margin-top:.5rem"><label>نص السؤال</label><textarea class="in" onchange="qSet(${i},'text',this.value)">${esc(q.text)}</textarea></div>
+    ${q.type === 'mcq' ? `<div class="row">${['أ', 'ب', 'ج', 'د'].map((L, k) => `<div class="f"><label>${L})</label><input class="in" value="${esc(q.options[k])}" onchange="UI.exam.qs[${i}].options[${k}]=this.value"></div>`).join('')}</div>` : ''}
+    ${q.type === 'match' ? `<div class="row"><div class="f"><label>المجموعة الأولى</label>${q.a.map((v, k) => `<input class="in" style="margin-bottom:.3rem" placeholder="${k + 1}-" value="${esc(v)}" onchange="UI.exam.qs[${i}].a[${k}]=this.value">`).join('')}</div>
+      <div class="f"><label>المجموعة الثانية</label>${q.b.map((v, k) => `<input class="in" style="margin-bottom:.3rem" placeholder="${'أبجد'[k]}-" value="${esc(v)}" onchange="UI.exam.qs[${i}].b[${k}]=this.value">`).join('')}</div></div>` : ''}
+    <div class="f" style="margin-top:.5rem"><label>الإجابة النموذجية</label>
+      ${q.type === 'tf' ? `<div class="btns" style="margin:.2rem 0"><button class="btn sm ${q.answer === 'صح' ? 'g' : ''}" onclick="qSet(${i},'answer','صح',true)">صح</button><button class="btn sm ${q.answer === 'خطأ' ? 'r' : ''}" onclick="qSet(${i},'answer','خطأ',true)">خطأ</button></div>` : ''}
+      <textarea class="in" style="min-height:56px;background:#f4faf4" onchange="qSet(${i},'answer',this.value)">${esc(q.answer)}</textarea></div>
+  </div>`;
+  return `<div class="card"><h2>${e.isNew ? 'دفتر أسئلة جديد' : 'تعديل دفتر الأسئلة'}</h2>
+    <div class="row">
+      <div class="f"><label>المادة</label><select class="in" onchange="UI.exam.subj=this.value">${opts(S.subjects.map(s => [s.id, s.name]), e.subj)}</select></div>
+      <div class="f"><label>الصف</label><select class="in" onchange="UI.exam.cls=this.value">${opts(S.classes, e.cls)}</select></div>
+      <div class="f"><label>نوع الامتحان</label><select class="in" onchange="UI.exam.kind=this.value;render()">${opts(EXAM_KINDS, e.kind)}</select></div>
+      ${e.kind === 'monthly' ? `<div class="f"><label>الشهر</label><select class="in" onchange="UI.exam.month=this.value">${opts(ACADEMIC_MONTHS, e.month)}</select></div>` : ''}
+      <div class="f"><label>الوقت</label><select class="in" onchange="UI.exam.time=this.value">${opts(['نصف ساعة', 'ساعة واحدة', 'ساعة ونصف', 'ساعتان', 'ساعتان ونصف', 'ثلاث ساعات'], e.time)}</select></div>
+    </div>
+    <div class="${total === 100 ? 'good' : 'warn'}">مجموع درجات الأسئلة = <b>${total}</b>${total === 100 ? '' : ' (يُفضّل أن يكون 100)'}</div>
+    <details class="hint"><summary style="cursor:pointer;font-weight:700">${ic('magic')} المساعد الذكي (Gemini) — اختياري</summary>
+      <p style="margin:.4rem 0">اكتب موضوع السؤال ثم اضغط «توليد»، أو ارفع ملف الدرس (PDF/نص) ليُبنى عليه. يتطلب إنترنت ومفتاح API من الإعدادات.</p>
+      <div class="btns"><label class="btn y">${ic('up')} رفع ملف الدرس<input type="file" class="hidden" accept=".pdf,.txt,.md" onchange="loadRef(this)"></label>
+        <span id="refStatus" class="muted" style="align-self:center">${refName ? esc(refName) : ''}</span>
+        <button class="btn b" id="aiAll" onclick="aiAll()">${ic('magic')} توليد كل الأسئلة</button></div></details>
+    ${e.qs.map(qHTML).join('')}
+    <div class="btns"><button class="btn" onclick="UI.exam.qs.push(newQ());render()">${ic('plus')} إضافة سؤال</button></div>
+    <div class="btns">
+      <button class="btn g" onclick="saveExam()">${ic('check')} حفظ</button>
+      <button class="btn p" onclick="previewExam(false)">${ic('print')} معاينة الأسئلة</button>
+      <button class="btn p" onclick="previewExam(true)">${ic('print')} معاينة مع الأجوبة</button>
+      <button class="btn" onclick="if(confirm('الخروج دون حفظ التغييرات؟')){UI.exam=null;render()}">رجوع</button>
+    </div></div>`;
+}
+function qSet(i, k, v, rerender) { UI.exam.qs[i][k] = v; if (rerender) render(); }
+function qMove(i, d) { const a = UI.exam.qs; [a[i], a[i + d]] = [a[i + d], a[i]]; render(); }
+function qDel(i) { if (UI.exam.qs.length > 1 && confirm('حذف السؤال؟')) { UI.exam.qs.splice(i, 1); render(); } }
+async function saveExam() {
+  const e = UI.exam; const empty = e.qs.findIndex(q => !q.text.trim());
+  if (empty >= 0) return toast(`اكتب نص السؤال ${Q_ORD[empty] || empty + 1}`, 'bad');
+  delete e.isNew; e.updated = new Date().toISOString();
+  const i = S.exams.findIndex(x => x.id === e.id); if (i >= 0) S.exams[i] = clone(e); else S.exams.push(clone(e));
+  await dbPut('exams', clone(e)); UI.exam = null; render(); toast('تم حفظ دفتر الأسئلة');
+}
+async function deleteExam(id) { if (!confirm('حذف دفتر الأسئلة؟')) return; S.exams = S.exams.filter(e => e.id !== id); await dbDel('exams', id); render(); }
+function examPaperHTML(e, withAns) {
+  const subj = getSubj(e.subj) || { name: '' }, st = S.settings, total = sum(e.qs.map(q => q.marks));
+  let h = `<div class="sheet portrait"><div class="exam-paper"><table class="exam-head"><tr>
+    <td><div class="eh-school">${esc(st.school)}</div><div>الصف: ${esc(e.cls || '')}</div><div>العام الدراسي: ${esc(st.year)}</div></td>
+    <td><div><b>المادة:</b> ${esc(subj.name)}</div><div><b>الوقت:</b> ${esc(e.time)}</div><div><b>الدرجة الكلية:</b> ${total}</div></td></tr></table>
+    <div class="exam-title">${esc(examLabel(e))} في مادة ${esc(subj.name)}${withAns ? ' — (مع الإجابات النموذجية)' : ''}</div>
+    <div class="exam-student"><span>الاسم: ........................................................</span><span>الصف والشعبة: ....................</span></div>`;
+  e.qs.forEach((q, i) => {
+    h += `<div class="exam-q"><div class="qt"><span>س${i + 1}/ ${esc(Q_TYPES[q.type])}</span><span class="qm">(${q.marks} درجة)</span></div><div class="qx">${esc(q.text)}</div>`;
+    if (q.type === 'mcq') h += `<div class="qo">${['أ', 'ب', 'ج', 'د'].map((L, k) => q.options[k] ? `<span>${L}) ${esc(q.options[k])}</span>` : '').join('')}</div>`;
+    if (q.type === 'tf') h += `<div>(&nbsp;&nbsp;&nbsp;) صح &nbsp;&nbsp;&nbsp;&nbsp; (&nbsp;&nbsp;&nbsp;) خطأ</div>`;
+    if (q.type === 'match' && q.a.some(Boolean)) h += `<table class="match"><tr><th>المجموعة الأولى</th><th>المجموعة الثانية</th></tr>${q.a.map((a, k) => (a || q.b[k]) ? `<tr><td>${k + 1}- ${esc(a)}</td><td>${'أبجدهو'[k] || k + 1}- ${esc(q.b[k] || '')}</td></tr>` : '').join('')}</table>`;
+    if (withAns && q.answer) h += `<div class="ans"><b>الإجابة: </b>${esc(q.answer)}</div>`;
+    h += '</div>';
+  });
+  h += `<div class="wish">مع تمنياتنا لكم بالتوفيق والنجاح</div><div class="sig"><div>معلم المادة<br>${esc(st.teacher)}</div><div>مدير المدرسة<br>${esc(st.principal)}</div></div></div></div>`;
+  return h;
+}
+function previewExam(withAns) { const e = UI.exam; showPrint(examLabel(e), examPaperHTML(e, withAns), { portrait: true, docxName: 'أسئلة_' + examLabel(e) }); }
+function printExam(id, withAns) { const e = S.exams.find(x => x.id === id); showPrint(examLabel(e), examPaperHTML(e, withAns), { portrait: true, docxName: 'أسئلة_' + examLabel(e) }); }
+function wordExam(id, withAns) { const e = S.exams.find(x => x.id === id), subj = getSubj(e.subj); saveFile(makeDOCXBlob(examLabel(e), examPaperHTML(e, withAns), { landscape: false }), `أسئلة_${examLabel(e)}_${subj ? subj.name : ''}.docx`); }
+
+// ----- Gemini -----
+async function loadRef(input) {
+  const f = input.files[0]; input.value = ''; if (!f) return;
+  $('refStatus').textContent = 'جاري القراءة...';
+  try {
+    let t = /\.pdf$/i.test(f.name) ? await pdfText(f) : await f.text();
+    t = t.replace(/\s+/g, ' ').trim().slice(0, 15000);
+    if (!t) throw new Error('الملف لا يحتوي نصاً قابلاً للقراءة');
+    refText = t; refName = f.name + ` (${t.length} حرف)`; $('refStatus').textContent = refName; toast('تم تحميل ملف الدرس');
+  } catch (e) { refText = ''; refName = ''; $('refStatus').textContent = ''; toast(e.message, 'bad'); }
+}
+async function pdfText(file) {
+  if (!window.pdfjsLib) {
+    await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; s.onload = res; s.onerror = () => rej(new Error('قراءة PDF تحتاج اتصالاً بالإنترنت')); document.head.appendChild(s); });
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise; let t = '';
+  for (let p = 1; p <= Math.min(pdf.numPages, 30); p++) { const c = await (await pdf.getPage(p)).getTextContent(); t += c.items.map(x => x.str).join(' ') + '\n'; }
+  return t;
+}
+async function callGemini(prompt) {
+  const key = (S.settings.aiKey || '').trim();
+  if (!key) { toast('أدخل مفتاح Gemini في الإعدادات أولاً', 'bad'); return null; }
+  const models = [...new Set([S.settings.aiModel || 'gemini-2.5-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'])];
+  let err;
+  for (const m of models) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, responseMimeType: 'application/json' } })
+      });
+      const d = await r.json();
+      if (!r.ok) { err = new Error(d.error ? d.error.message : 'خطأ في الاتصال'); continue; }
+      const txt = d.candidates && d.candidates[0] && d.candidates[0].content.parts.map(p => p.text || '').join('');
+      if (txt) return JSON.parse(txt.replace(/^```(json)?|```$/g, '').trim());
+    } catch (e) { err = e; }
+  }
+  toast('فشل التوليد: ' + (err ? err.message : ''), 'bad'); return null;
+}
+async function aiQuestion(i, silent) {
+  const e = UI.exam, q = e.qs[i];
+  if (!q.topic && !refText && !silent) { toast('اكتب موضوع السؤال أو ارفع ملف الدرس', 'bad'); return false; }
+  const subj = getSubj(e.subj), btn = $('ai' + i); if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  let p = `أنت معلم خبير في مادة "${subj.name}" للصف "${e.cls}" في مدرسة ابتدائية عراقية وفق المنهج العراقي. `
+    + `أنشئ سؤال امتحان واحداً من نوع "${Q_TYPES[q.type]}" درجته ${q.marks}، بلغة عربية فصيحة مناسبة لعمر التلاميذ. `;
+  if (q.topic) p += `الموضوع: "${q.topic}". `;
+  if (refText) p += `اعتمد على نص الدرس التالي: """${refText.slice(0, 8000)}""" `;
+  p += `أعد JSON فقط بالمفاتيح: {"text": نص السؤال الكامل (قد يتضمن فروعاً مرقمة)، "answer": الإجابة النموذجية المختصرة`;
+  if (q.type === 'mcq') p += `، "options": مصفوفة من 4 خيارات بدون حروف`;
+  if (q.type === 'match') p += `، "a": مصفوفة 4 عناصر للمجموعة الأولى، "b": مصفوفة 4 عناصر مقابلة للمجموعة الثانية بترتيب مخلوط`;
+  if (q.type === 'tf') p += ` ويجب أن تكون "صح" أو "خطأ"`;
+  p += '}';
+  const r = await callGemini(p);
+  if (btn) { btn.disabled = false; btn.innerHTML = ic('magic') + ' توليد'; }
+  if (!r) return false;
+  if (r.text) q.text = String(r.text); if (r.answer) q.answer = String(r.answer);
+  if (Array.isArray(r.options)) r.options.slice(0, 4).forEach((v, k) => q.options[k] = String(v));
+  if (Array.isArray(r.a)) r.a.slice(0, 4).forEach((v, k) => q.a[k] = String(v));
+  if (Array.isArray(r.b)) r.b.slice(0, 4).forEach((v, k) => q.b[k] = String(v));
+  if (!silent) { render(); toast('تم توليد السؤال'); }
+  return true;
+}
+async function aiAll() {
+  if (!(S.settings.aiKey || '').trim()) return toast('أدخل مفتاح Gemini في الإعدادات أولاً', 'bad');
+  let n = 0; const b = $('aiAll'); b.disabled = true;
+  for (let i = 0; i < UI.exam.qs.length; i++) { b.textContent = `جاري ${i + 1}/${UI.exam.qs.length}...`; if (await aiQuestion(i, true)) n++; else break; }
+  render(); toast(n ? `تم توليد ${n} سؤال — راجعها قبل الحفظ` : 'لم يتم التوليد', n ? 'ok' : 'bad');
+}
+
+// ======================================================================
+//  الجدول الأسبوعي
+// ======================================================================
+const tnorm = t => String(t || '').trim().replace(/\s+/g, ' ');
+function rTimetable() {
+  if (!S.classes.length) return needSetup();
+  const T = S.timetable;
+  if (!S.classes.includes(UI.planClass)) UI.planClass = S.classes[0];
+  const plan = T.plans[UI.planClass] || [];
+  const slots = sum(T.days.map(d => d.n));
+  const planned = sum(plan.map(r => r.count));
+  const subjNames = [...new Set([...S.subjects.map(s => s.name), ...Object.values(T.plans).flat().map(r => r.subject).filter(Boolean)])];
+  const teachers = [...new Set(Object.values(T.plans).flat().map(r => tnorm(r.teacher)).filter(Boolean))].sort(arCmp);
+  const loads = {}; Object.entries(T.plans).forEach(([c, rows]) => { if (!S.classes.includes(c)) return; rows.forEach(r => { const t = tnorm(r.teacher); if (!t) return; loads[t] = loads[t] || { n: 0, cls: new Set() }; loads[t].n += +r.count || 0; loads[t].cls.add(c); }); });
+  return `
+  <div class="card"><h2>1) أيام الدوام وعدد الحصص</h2>
+    <div class="row">${T.days.map((d, i) => `<div class="f" style="flex:1 1 110px"><label>${esc(d.name)}</label><input class="in" type="number" min="0" max="10" value="${d.n}" onchange="S.timetable.days[${i}].n=Math.max(0,Math.min(10,+this.value||0));ttChanged()"></div>`).join('')}</div>
+    <p class="muted" style="margin-top:.4rem">المجموع: ${slots} حصة في الأسبوع لكل صف. ضع 0 ليوم العطلة.</p>
+  </div>
+  <div class="card"><h2>2) مواد كل صف ومعلميها</h2>
+    <div class="row"><div class="f"><label>الصف</label><select class="in" onchange="UI.planClass=this.value;render()">${opts(S.classes.map(c => [c, `${c} (${sum((T.plans[c] || []).map(r => r.count))}/${slots})`]), UI.planClass)}</select></div>
+      <div class="btns" style="margin:0">
+        <button class="btn" onclick="copyPlan()">${ic('copy')} نسخ خطة هذا الصف لصفوف أخرى</button>
+        <label class="btn b">${ic('up')} استيراد Excel<input type="file" class="hidden" accept=".xlsx,.csv" onchange="importPlan(this)"></label>
+        <button class="btn" onclick="downloadPlanTemplate()">${ic('down')} نموذج Excel</button></div></div>
+    <datalist id="dlSubj">${subjNames.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+    <datalist id="dlTeach">${teachers.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+    <div class="tw" style="margin-top:.6rem;max-height:none"><table class="t"><thead><tr><th>المادة</th><th>المعلم</th><th>الحصص في الأسبوع</th><th></th></tr></thead><tbody>
+    ${plan.map((r, i) => `<tr><td><input class="in" list="dlSubj" value="${esc(r.subject)}" onchange="planSet(${i},'subject',this.value)"></td>
+      <td><input class="in" list="dlTeach" value="${esc(r.teacher)}" onchange="planSet(${i},'teacher',this.value)"></td>
+      <td><input class="in" type="number" min="0" max="12" style="width:90px" value="${r.count}" onchange="planSet(${i},'count',+this.value||0)"></td>
+      <td><button class="btn sm r" onclick="planDel(${i})">${ic('trash')}</button></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="btns"><button class="btn g" onclick="planAdd()">${ic('plus')} إضافة مادة</button></div>
+    <div class="${planned > slots ? 'err' : planned === slots ? 'good' : 'hint'}">مجموع حصص ${esc(UI.planClass)}: <b>${planned}</b> من ${slots} ${planned > slots ? '— أكثر من المتاح! قلّل الحصص' : planned < slots ? `— ستبقى ${slots - planned} حصة فارغة (تُوضع آخر اليوم)` : '— مكتمل'}</div>
+    ${teachers.length ? `<h3>أنصبة المعلمين</h3><div>${Object.entries(loads).sort((a, b) => b[1].n - a[1].n).map(([t, l]) => `<span class="chip" style="${l.n > slots ? 'background:#fdecec;color:#b00' : ''}">${esc(t)}: ${l.n} حصة (${l.cls.size} صف)</span>`).join('')}</div>` : ''}
+  </div>
+  <div class="card"><h2>3) توليد الجدول</h2>
+    <p class="muted">البرنامج يوزّع الحصص بحيث لا يُدرّس المعلم صفّين في نفس الوقت، ويفرّق حصص المادة الواحدة على أيام الأسبوع.</p>
+    <div class="btns"><button class="btn g" onclick="ttGenerate()">${ic('magic')} توليد الجدول ${T.result ? '(من جديد)' : ''}</button></div>
+    ${T.result && T.stale ? '<div class="warn">عدّلت الخطة أو الحصص بعد التوليد — أعد التوليد لتطبيق التغييرات.</div>' : ''}
+    ${T.result ? ttResultHTML() : ''}
+  </div>`;
+}
+function ttChanged() { S.timetable.stale = !!S.timetable.result; saveMeta('timetable'); render(); }
+function planRows() { const T = S.timetable; return T.plans[UI.planClass] = T.plans[UI.planClass] || []; }
+function planSet(i, k, v) { planRows()[i][k] = k === 'teacher' ? tnorm(v) : v; ttChanged(); }
+function planAdd() { planRows().push({ id: uid(), subject: '', teacher: '', count: 1 }); ttChanged(); setTimeout(() => { const ins = document.querySelectorAll('#view table.t input[list="dlSubj"]'); if (ins.length) ins[ins.length - 1].focus(); }, 50); }
+function planDel(i) { planRows().splice(i, 1); ttChanged(); }
+function copyPlan() {
+  const src = UI.planClass;
+  openModal('نسخ خطة ' + src, `<p class="muted">اختر الصفوف التي تأخذ نفس المواد وعدد الحصص (يمكنك بعدها تغيير المعلمين):</p>
+    ${S.classes.filter(c => c !== src).map((c, i) => `<label class="chip" style="font-size:.95rem"><input type="checkbox" class="cpc" value="${esc(c)}"> ${esc(c)}</label>`).join('') || '<p>لا توجد صفوف أخرى.</p>'}`,
+    `<button class="btn g" onclick="doCopyPlan()">${ic('copy')} نسخ</button><button class="btn" onclick="closeModal()">إلغاء</button>`);
+}
+function doCopyPlan() {
+  const src = S.timetable.plans[UI.planClass] || [];
+  const targets = [...document.querySelectorAll('.cpc:checked')].map(x => x.value);
+  targets.forEach(c => S.timetable.plans[c] = src.map(r => ({ ...r, id: uid() })));
+  closeModal(); ttChanged(); toast(`تم النسخ إلى ${targets.length} صف`);
+}
+async function importPlan(input) {
+  const f = input.files[0]; input.value = ''; if (!f) return;
+  try {
+    const sheets = await readSpreadsheet(f); let n = 0; const touched = new Set();
+    for (const sh of sheets) {
+      const rows = sh.rows.filter(r => r && r.some(c => String(c ?? '').trim()));
+      const hi = rows.findIndex(r => findCol(r, ['المادة']) >= 0); if (hi < 0) continue;
+      const h = rows[hi], cC = findCol(h, ['الصف', 'الشعبة']), cS = findCol(h, ['المادة']), cT = findCol(h, ['المعلم', 'المدرس', 'المعلمة']), cN = findCol(h, ['الحصص', 'عدد', 'حصص']);
+      for (const r of rows.slice(hi + 1)) {
+        const subject = String(r[cS] ?? '').trim(); if (!subject) continue;
+        const cls = cC >= 0 && String(r[cC] ?? '').trim() ? String(r[cC]).trim() : UI.planClass;
+        if (!S.classes.includes(cls)) { S.classes.push(cls); await saveMeta('classes'); }
+        if (!touched.has(cls)) { S.timetable.plans[cls] = []; touched.add(cls); }
+        S.timetable.plans[cls].push({ id: uid(), subject, teacher: cT >= 0 ? tnorm(r[cT]) : '', count: cN >= 0 ? (toNum(r[cN]) || 1) : 1 }); n++;
+      }
+    }
+    if (!n) return toast('لم أجد عموداً باسم "المادة" في الملف', 'bad');
+    ttChanged(); toast(`تم استيراد ${n} سطر لـ ${touched.size} صف`);
+  } catch (e) { toast('تعذّر قراءة الملف: ' + e.message, 'bad'); }
+}
+function downloadPlanTemplate() {
+  const rows = [['الصف', 'المادة', 'المعلم', 'عدد الحصص'].map(v => ({ v, h: 1 }))];
+  const ex = Object.entries(S.timetable.plans).flatMap(([c, rs]) => rs.map(r => [c, r.subject, r.teacher, +r.count]));
+  (ex.length ? ex : [[S.classes[0] || 'السادس', 'اللغة العربية', 'اسم المعلم', 7], [S.classes[0] || 'السادس', 'التربية الإسلامية', 'اسم المعلم', 3]]).forEach(r => rows.push(r));
+  saveFile(makeXLSXBlob([{ name: 'خطة الصفوف', rows }]), 'خطة_الحصص.xlsx');
+}
+
+// خوارزمية التوليد
+function ttGenerate() {
+  const T = S.timetable, days = T.days.map((d, i) => ({ i, n: d.n })).filter(d => d.n > 0);
+  if (!days.length) return toast('حدّد عدد الحصص لأيام الدوام', 'bad');
+  const slots = []; days.forEach(d => { for (let p = 0; p < d.n; p++) slots.push([d.i, p]); });
+  const classes = S.classes.filter(c => (T.plans[c] || []).some(r => r.subject && +r.count > 0));
+  if (!classes.length) return toast('أدخل مواد الصفوف أولاً', 'bad');
+  const errs = [];
+  classes.forEach(c => { const n = sum(T.plans[c].map(r => r.count)); if (n > slots.length) errs.push(`الصف ${c}: ${n} حصة أكثر من ${slots.length} المتاحة`); });
+  const load = {}; classes.forEach(c => T.plans[c].forEach(r => { const t = tnorm(r.teacher); if (t) load[t] = (load[t] || 0) + (+r.count || 0); }));
+  Object.entries(load).forEach(([t, n]) => { if (n > slots.length) errs.push(`المعلم ${t}: ${n} حصة أكثر من ${slots.length} المتاحة`); });
+  if (errs.length) return openModal('لا يمكن التوليد', `<div class="err">${errs.map(esc).join('<br>')}</div>`);
+  const nd = days.length;
+  const base = [];
+  classes.forEach(c => T.plans[c].forEach(r => { const cnt = Math.max(0, Math.round(+r.count || 0)); for (let k = 0; k < cnt; k++) base.push({ c, s: r.subject.trim(), t: tnorm(r.teacher) || null, maxDay: Math.ceil(cnt / nd) }); }));
+  const K = s => s[0] + ',' + s[1];
+
+  function attempt() {
+    const cg = {}; classes.forEach(c => cg[c] = {});
+    const tb = {}, sd = {}, cdl = {};
+    const units = base.map(u => ({ ...u, slot: null }));
+    const sdc = (u, d) => ((sd[u.c + '|' + u.s] || {})[d] || 0);
+    const ok = (u, s, relax) => { const k = K(s); if (cg[u.c][k]) return false; if (u.t && tb[u.t] && tb[u.t][k]) return false; if (!relax && sdc(u, s[0]) >= u.maxDay) return false; return true; };
+    const place = (u, s) => { const k = K(s); cg[u.c][k] = u; if (u.t) (tb[u.t] = tb[u.t] || {})[k] = u; const x = sd[u.c + '|' + u.s] = sd[u.c + '|' + u.s] || {}; x[s[0]] = (x[s[0]] || 0) + 1; (cdl[u.c] = cdl[u.c] || {})[s[0]] = (cdl[u.c][s[0]] || 0) + 1; u.slot = s; };
+    const remove = u => { const s = u.slot, k = K(s); delete cg[u.c][k]; if (u.t) delete tb[u.t][k]; sd[u.c + '|' + u.s][s[0]]--; cdl[u.c][s[0]]--; u.slot = null; };
+    const score = (u, s) => { const [d, p] = s; let sc = sdc(u, d) * 10 + ((cdl[u.c] || {})[d] || 0) * 0.6 + p * 0.35 + Math.random() * 2.5;
+      const prev = cg[u.c][d + ',' + (p - 1)], next = cg[u.c][d + ',' + (p + 1)]; if ((prev && prev.s === u.s) || (next && next.s === u.s)) sc += 2; return sc; };
+    const tl = {}; units.forEach(u => { if (u.t) tl[u.t] = (tl[u.t] || 0) + 1; });
+    const order = shuffle(units).sort((a, b) => ((b.t ? tl[b.t] : 0) - (a.t ? tl[a.t] : 0)) || (a.maxDay - b.maxDay));
+    const unplaced = [];
+    for (const u of order) {
+      let best = null, bs = Infinity;
+      for (const s of slots) if (ok(u, s)) { const v = score(u, s); if (v < bs) { bs = v; best = s; } }
+      if (best) place(u, best); else unplaced.push(u);
+    }
+    const repair = (u, relax) => {
+      for (const s of shuffle(slots)) {
+        const k = K(s); if (cg[u.c][k]) continue; if (!relax && sdc(u, s[0]) >= u.maxDay) continue;
+        const v = u.t && tb[u.t] && tb[u.t][k];
+        if (!v) { place(u, s); return true; }
+        remove(v);
+        for (const s2 of shuffle(slots)) { if (K(s2) !== k && ok(v, s2, relax)) { place(v, s2); if (ok(u, s, relax)) { place(u, s); return true; } remove(v); break; } }
+        place(v, s);
+      }
+      for (const s of shuffle(slots)) {
+        const w = cg[u.c][K(s)]; if (!w) continue;
+        remove(w);
+        if (ok(u, s, relax)) { place(u, s); for (const s2 of shuffle(slots)) if (ok(w, s2, relax)) { place(w, s2); return true; } remove(u); }
+        place(w, s);
+      }
+      return false;
+    };
+    for (let pass = 0; pass < 3; pass++) for (let i = unplaced.length - 1; i >= 0; i--) if (repair(unplaced[i], false)) unplaced.splice(i, 1);
+    return { units, unplaced, repair, cg };
+  }
+  let best = null; const deadline = performance.now() + 2500;
+  do { const r = attempt(); if (!best || r.unplaced.length < best.unplaced.length) best = r; if (!best.unplaced.length) break; } while (performance.now() < deadline);
+  // المحاولة الأخيرة: السماح بتكرار المادة في اليوم إن لزم
+  for (let i = best.unplaced.length - 1; i >= 0; i--) if (best.repair(best.unplaced[i], true)) best.unplaced.splice(i, 1);
+  const grid = {};
+  classes.forEach(c => { grid[c] = T.days.map(d => Array.from({ length: d.n }, () => null)); });
+  best.units.forEach(u => { if (u.slot) grid[u.c][u.slot[0]][u.slot[1]] = { s: u.s, t: u.t || '' }; });
+  T.result = { grid, unplaced: best.unplaced.map(u => `${u.c}: ${u.s}${u.t ? ' (' + u.t + ')' : ''}`), at: new Date().toISOString() };
+  T.stale = false; UI.ttPick = null; if (!UI.ttSel || !grid[UI.ttSel]) { UI.ttView = 'class'; UI.ttSel = classes[0]; }
+  saveMeta('timetable'); render();
+  toast(best.unplaced.length ? `تم التوليد مع ${best.unplaced.length} حصة لم توضع — راجع التنبيه` : 'تم توليد الجدول بلا أي تعارض', best.unplaced.length ? 'bad' : 'ok');
+}
+function ttConflicts() {
+  const g = S.timetable.result.grid, occ = {}, bad = new Set();
+  Object.entries(g).forEach(([c, days]) => days.forEach((ps, d) => ps.forEach((cell, p) => { if (!cell || !cell.t) return; const k = cell.t + '|' + d + ',' + p; (occ[k] = occ[k] || []).push(c + '|' + d + '|' + p); })));
+  Object.values(occ).forEach(a => { if (a.length > 1) a.forEach(x => bad.add(x)); });
+  return bad;
+}
+function ttTeachers() { return [...new Set(Object.values(S.timetable.result.grid).flatMap(d => d.flat()).filter(Boolean).map(x => x.t).filter(Boolean))].sort(arCmp); }
+function ttTableHTML(kind, key, interactive) {
+  const T = S.timetable, g = T.result.grid, maxP = Math.max(...T.days.map(d => d.n));
+  const conf = interactive ? ttConflicts() : new Set();
+  let h = `<table class="${interactive ? 't tt' : 'pt'}"><thead><tr><th>اليوم</th>${Array.from({ length: maxP }, (_, p) => `<th>الحصة ${ORD[p] || p + 1}</th>`).join('')}</tr></thead><tbody>`;
+  T.days.forEach((d, di) => {
+    if (!d.n) return;
+    h += `<tr><td class="dayh"><b style="color:inherit">${esc(d.name)}</b></td>`;
+    for (let p = 0; p < maxP; p++) {
+      if (p >= d.n) { h += `<td class="off"></td>`; continue; }
+      if (kind === 'class') {
+        const cell = (g[key] || [])[di] && g[key][di][p];
+        const pk = UI.ttPick && UI.ttPick.c === key && UI.ttPick.d === di && UI.ttPick.p === p;
+        const cls = [pk ? 'pick' : '', conf.has(key + '|' + di + '|' + p) ? 'conf' : ''].join(' ');
+        h += `<td class="${cls}" ${interactive ? `onclick="ttTap(${di},${p})"` : ''}>${cell ? `<b>${esc(cell.s)}</b><small>${esc(cell.t)}</small>` : '<small>—</small>'}</td>`;
+      } else {
+        const hits = Object.entries(g).filter(([c, ds]) => ds[di] && ds[di][p] && ds[di][p].t === key).map(([c, ds]) => `<b>${esc(c)}</b><small>${esc(ds[di][p].s)}</small>`);
+        h += `<td class="${hits.length > 1 ? 'conf' : ''}" style="cursor:default">${hits.join('<hr style="border:none;border-top:1px dashed #ccc;margin:2px 0">') || '<small>—</small>'}</td>`;
+      }
+    }
+    h += '</tr>';
+  });
+  return h + '</tbody></table>';
+}
+function ttResultHTML() {
+  const R = S.timetable.result, cls = Object.keys(R.grid).filter(c => S.classes.includes(c)), teachers = ttTeachers();
+  if (UI.ttView === 'class' && !cls.includes(UI.ttSel)) UI.ttSel = cls[0];
+  if (UI.ttView === 'teacher' && !teachers.includes(UI.ttSel)) UI.ttSel = teachers[0] || '';
+  const conf = ttConflicts();
+  return `${R.unplaced.length ? `<div class="err"><b>حصص لم يمكن وضعها بلا تعارض:</b><br>${R.unplaced.map(esc).join('<br>')}<br>الحل: خفّف نصاب المعلم المزدحم، أو زد عدد الحصص اليومية، ثم أعد التوليد.</div>` : ''}
+    ${conf.size ? `<div class="err">يوجد تعارض (معلم في صفّين بنفس الوقت) — الخلايا الحمراء.</div>` : ''}
+    <div class="row" style="margin-top:.6rem">
+      <div class="f"><label>العرض</label><select class="in" onchange="UI.ttView=this.value;UI.ttSel='';UI.ttPick=null;render()">${opts([['class', 'جدول صف'], ['teacher', 'جدول معلم']], UI.ttView)}</select></div>
+      <div class="f"><label>${UI.ttView === 'class' ? 'الصف' : 'المعلم'}</label><select class="in" onchange="UI.ttSel=this.value;UI.ttPick=null;render()">${opts(UI.ttView === 'class' ? cls : teachers, UI.ttSel)}</select></div>
+    </div>
+    <div class="btns"><button class="btn p" onclick="printTT('class')">${ic('print')} طباعة جداول كل الصفوف</button>
+      <button class="btn" onclick="printTT('teacher')">${ic('print')} طباعة جداول المعلمين</button>
+      <button class="btn g" onclick="exportTT()">${ic('xls')} Excel</button></div>
+    ${UI.ttView === 'class' ? '<div class="hint">للتعديل اليدوي: اضغط حصة ثم اضغط حصة أخرى في نفس الجدول لتبديلهما. إن ظهر لون أحمر فهناك تعارض للمعلم.</div>' : ''}
+    <div class="tw" style="max-height:none">${UI.ttSel ? ttTableHTML(UI.ttView, UI.ttSel, true) : ''}</div>`;
+}
+function ttTap(d, p) {
+  const c = UI.ttSel, g = S.timetable.result.grid[c];
+  if (!UI.ttPick || UI.ttPick.c !== c) { UI.ttPick = { c, d, p }; render(); return; }
+  const a = UI.ttPick; UI.ttPick = null;
+  if (a.d !== d || a.p !== p) { const tmp = g[a.d][a.p]; g[a.d][a.p] = g[d][p]; g[d][p] = tmp; saveMeta('timetable'); }
+  render();
+}
+function ttSheets(kind) {
+  const R = S.timetable.result, st = S.settings;
+  const keys = kind === 'class' ? Object.keys(R.grid).filter(c => S.classes.includes(c)) : ttTeachers();
+  return keys.map((k, i) => ({ name: k, html: `<div class="sheet${i < keys.length - 1 ? ' pbreak' : ''}"><div class="ph"><div class="l1">${esc(st.school)}</div>
+    <div class="l2">جدول الدروس الأسبوعي — ${kind === 'class' ? 'الصف ' : 'المعلم/ة: '}${esc(k)}</div><div>للعام الدراسي ${esc(st.year)}</div></div>
+    ${ttTableHTML(kind, k, false)}<div class="sig"><div>مدير المدرسة<br>${esc(st.principal)}</div></div></div>` }));
+}
+function printTT(kind) { const sh = ttSheets(kind); showPrint(kind === 'class' ? 'جداول الصفوف' : 'جداول المعلمين', sh.map(s => s.html).join(''), { xlsx: () => xlsxFromHTML(sh), xlsxName: kind === 'class' ? 'جداول_الصفوف' : 'جداول_المعلمين' }); }
+function exportTT() { saveFile(xlsxFromHTML([...ttSheets('class'), ...ttSheets('teacher').map(s => ({ ...s, name: 'م- ' + s.name }))]), 'الجدول_الأسبوعي.xlsx'); }
+
+// ======================================================================
+//  توزيع القاعات
+// ======================================================================
+const SEAT_COLORS = [['#dbeafe', '#1d4ed8'], ['#fde68a', '#92400e'], ['#dcfce7', '#15803d'], ['#fce7f3', '#be185d'], ['#ede9fe', '#6d28d9'], ['#ffedd5', '#c2410c'], ['#cffafe', '#0e7490'], ['#fee2e2', '#b91c1c']];
+const SEAT_MODES = [['cols', 'كل عمود لصف (حسب الترتيب)'], ['rows', 'كل صف مقاعد (أفقي) لصف'], ['checker', 'متناوب كرقعة الشطرنج'], ['fill', 'ملء القاعة بالتسلسل']];
+function seatColor(cls) { const i = S.seating.classes.indexOf(cls); return SEAT_COLORS[(i < 0 ? 7 : i) % SEAT_COLORS.length]; }
+function seatLabels(room, classes) {
+  const seq0 = (room.seq || []).filter(c => classes.includes(c)), seq = seq0.length ? seq0 : classes, g = [];
+  for (let r = 0; r < room.rows; r++) { g[r] = []; for (let c = 0; c < room.cols; c++) {
+    g[r][c] = !seq.length ? null : room.mode === 'cols' ? seq[c % seq.length] : room.mode === 'rows' ? seq[r % seq.length] : room.mode === 'checker' ? seq[(r + c) % seq.length] : '*';
+  } }
+  return { g, seq };
+}
+function seatOrderStudents(cls, order) {
+  let l = classStudents(cls);
+  if (order === 'num') l.sort((a, b) => (parseInt(a.num) || 0) - (parseInt(b.num) || 0));
+  if (order === 'random') l = shuffle(l);
+  return l;
+}
+function seatCompute() {
+  const cfg = S.seating, classes = cfg.classes.filter(c => S.classes.includes(c));
+  const q = {}; classes.forEach(c => q[c] = seatOrderStudents(c, cfg.order));
+  const total = {}; classes.forEach(c => total[c] = q[c].length);
+  let no = +cfg.start || 1; const rooms = [];
+  cfg.rooms.forEach(room => {
+    const { g, seq } = seatLabels(room, classes), grid = Array.from({ length: room.rows }, () => Array(room.cols).fill(null));
+    let fi = 0;
+    for (let c = 0; c < room.cols; c++) for (let r = 0; r < room.rows; r++) {
+      let cls = g[r][c];
+      if (cls === '*') { while (fi < seq.length && !q[seq[fi]].length) fi++; cls = seq[fi] || null; }
+      if (cls && q[cls] && q[cls].length) { const s = q[cls].shift(); grid[r][c] = { sid: s.id, cls, no: no++ }; }
+      else if (cls) grid[r][c] = { cls, empty: true };
+    }
+    rooms.push({ id: room.id, name: room.name, grid });
+  });
+  const left = Object.values(q).flat().map(s => s.id);
+  return { rooms, left, total };
+}
+function rSeating() {
+  if (!S.classes.length) return needSetup();
+  const cfg = S.seating; cfg.classes = cfg.classes.filter(c => S.classes.includes(c));
+  const sim = seatCompute();
+  const seatsBy = {}; sim.rooms.forEach(r => r.grid.flat().forEach(x => { if (x) seatsBy[x.cls] = (seatsBy[x.cls] || 0) + 1; }));
+  const capacity = sum(cfg.rooms.map(r => r.rows * r.cols)), nStud = sum(cfg.classes.map(c => classStudents(c).length));
+  const roomHTML = (rm, i) => {
+    const { g } = seatLabels(rm, cfg.classes);
+    return `<div class="band-box"><div class="row" style="align-items:flex-end">
+      <div class="f"><label>اسم القاعة</label><input class="in" value="${esc(rm.name)}" onchange="roomSet(${i},'name',this.value)"></div>
+      <div class="f" style="flex:0 1 120px"><label>المقاعد أفقياً (أعمدة)</label><input class="in" type="number" min="1" max="12" value="${rm.cols}" onchange="roomSet(${i},'cols',Math.max(1,Math.min(12,+this.value||1)))"></div>
+      <div class="f" style="flex:0 1 120px"><label>المقاعد عمودياً (صفوف)</label><input class="in" type="number" min="1" max="15" value="${rm.rows}" onchange="roomSet(${i},'rows',Math.max(1,Math.min(15,+this.value||1)))"></div>
+      <div class="f"><label>طريقة التوزيع</label><select class="in" onchange="roomSet(${i},'mode',this.value)">${opts(SEAT_MODES, rm.mode)}</select></div>
+      <button class="btn sm r" onclick="roomDel(${i})">${ic('trash')}</button></div>
+      <div style="margin-top:.5rem"><span class="muted">${rm.mode === 'cols' ? 'ترتيب الأعمدة من اليمين:' : rm.mode === 'rows' ? 'ترتيب الصفوف من الأمام:' : rm.mode === 'checker' ? 'الصفوف المتناوبة:' : 'ترتيب الملء:'}</span>
+        ${(rm.seq || []).map((c, k) => `<span class="chip" style="background:${seatColor(c)[0]}">${esc(c)}<button onclick="seqDel(${i},${k})">×</button></span>`).join('') || '<span class="muted"> (افتراضياً: كل الصفوف المختارة بالتناوب)</span>'}
+        <select class="in" style="width:auto;display:inline-block;min-height:34px;padding:.2rem .5rem" onchange="if(this.value)seqAdd(${i},this.value)"><option value="">+ إضافة صف للترتيب</option>${opts(cfg.classes, '')}</select></div>
+      <div style="margin-top:.5rem;overflow:auto"><div style="display:inline-block"><div class="board">السبورة</div><table class="seat mini">${g.map(row => `<tr>${row.map(c => `<td style="background:${c && c !== '*' ? seatColor(c)[0] : '#fff'}"></td>`).join('')}</tr>`).join('')}</table></div></div>
+    </div>`;
+  };
+  return `
+  <div class="card"><h2>1) الامتحان والصفوف المشاركة</h2>
+    <div class="row">
+      <div class="f" style="flex:2 1 220px"><label>عنوان الامتحان</label><input class="in" value="${esc(cfg.title)}" onchange="S.seating.title=this.value;seatChanged(true)"></div>
+      <div class="f"><label>ترتيب الطلاب داخل الصف</label><select class="in" onchange="S.seating.order=this.value;seatChanged(true)">${opts([['name', 'أبجدي بالاسم'], ['num', 'حسب رقم القيد'], ['random', 'عشوائي']], cfg.order)}</select></div>
+      <div class="f" style="flex:0 1 140px"><label>يبدأ رقم الجلوس من</label><input class="in" type="number" min="1" value="${cfg.start}" onchange="S.seating.start=+this.value||1;seatChanged(true)"></div>
+    </div>
+    <div style="margin-top:.6rem">${S.classes.map(c => `<label class="chip" style="font-size:.92rem;cursor:pointer;${cfg.classes.includes(c) ? `background:${seatColor(c)[0]}` : ''}"><input type="checkbox" ${cfg.classes.includes(c) ? 'checked' : ''} onchange="seatToggleClass(${S.classes.indexOf(c)},this.checked)"> ${esc(c)} (${classStudents(c).length})</label>`).join('')}</div>
+  </div>
+  <div class="card"><h2>2) القاعات</h2>
+    ${cfg.rooms.map(roomHTML).join('')}
+    <div class="btns"><button class="btn g" onclick="roomAdd()">${ic('plus')} إضافة قاعة</button></div>
+    <div class="${capacity < nStud ? 'err' : 'hint'}">السعة الكلية ${capacity} مقعد لـ ${nStud} طالب.
+      ${cfg.classes.map(c => { const need = classStudents(c).length, have = seatsBy[c] || 0; return `<br>• ${esc(c)}: ${need} طالب — ${have} مقعد مخصص ${have < need ? `<b style="color:#b00">(ينقص ${need - have})</b>` : ''}`; }).join('')}</div>
+  </div>
+  <div class="card"><h2>3) التوزيع</h2>
+    <div class="btns"><button class="btn g" onclick="seatGenerate()">${ic('shuffle')} توزيع الطلاب</button>
+    ${cfg.result ? `<button class="btn p" onclick="printSeat('maps')">${ic('print')} خرائط القاعات</button>
+      <button class="btn" onclick="printSeat('doors')">${ic('print')} قوائم أبواب القاعات</button>
+      <button class="btn" onclick="printSeat('classes')">${ic('print')} قوائم الصفوف (القاعة ورقم الجلوس)</button>
+      <button class="btn g" onclick="exportSeat()">${ic('xls')} Excel</button>` : ''}</div>
+    ${cfg.result ? seatResultHTML(true) : '<p class="muted">اضبط الإعدادات ثم اضغط «توزيع الطلاب».</p>'}
+  </div>`;
+}
+function seatChanged(keepResult) { if (!keepResult) S.seating.result = null; saveMeta('seating'); render(); }
+function seatToggleClass(i, on) { const c = S.classes[i], a = S.seating.classes; if (on && !a.includes(c)) a.push(c); if (!on) S.seating.classes = a.filter(x => x !== c); seatChanged(); }
+function roomSet(i, k, v) { S.seating.rooms[i][k] = v; seatChanged(k === 'name'); }
+function roomAdd() { const r = S.seating.rooms, last = r[r.length - 1]; r.push({ id: uid(), name: 'القاعة ' + (r.length + 1), rows: last ? last.rows : 6, cols: last ? last.cols : 4, mode: last ? last.mode : 'cols', seq: last ? [...last.seq] : [] }); seatChanged(); }
+function roomDel(i) { if (confirm('حذف القاعة؟')) { S.seating.rooms.splice(i, 1); seatChanged(); } }
+function seqAdd(i, c) { S.seating.rooms[i].seq.push(c); seatChanged(); }
+function seqDel(i, k) { S.seating.rooms[i].seq.splice(k, 1); seatChanged(); }
+function seatGenerate() {
+  if (!S.seating.classes.length) return toast('اختر الصفوف المشاركة', 'bad');
+  if (!S.seating.rooms.length) return toast('أضف قاعة واحدة على الأقل', 'bad');
+  const r = seatCompute(); S.seating.result = { rooms: r.rooms, left: r.left, at: new Date().toISOString() };
+  saveMeta('seating'); render();
+  toast(r.left.length ? `تم التوزيع — ${r.left.length} طالب بلا مقعد` : 'تم توزيع جميع الطلاب', r.left.length ? 'bad' : 'ok');
+}
+const stu = id => S.students.find(s => s.id === id);
+function roomMapHTML(room) {
+  return `<div class="room"><div class="board">السبورة — ${esc(room.name)}</div><table class="seat">${room.grid.map(row => `<tr>${row.map(x => {
+    if (!x) return '<td style="background:#fff;border-style:dashed"></td>';
+    const [bg, fg] = seatColor(x.cls), s = x.sid && stu(x.sid);
+    return `<td style="background:${bg};border-color:${fg}">${x.empty || !s ? `<span class="cl">${esc(x.cls)}<br>(فارغ)</span>` : `<div class="sn">${x.no}</div><div class="nm">${esc(s.name.split(' ').slice(0, 2).join(' '))}</div><div class="cl">${esc(x.cls)}</div>`}</td>`;
+  }).join('')}</tr>`).join('')}</table></div>`;
+}
+function seatResultHTML() {
+  const R = S.seating.result, left = R.left.map(stu).filter(Boolean);
+  const placed = R.rooms.flatMap(r => r.grid.flat()).filter(x => x && x.sid).length;
+  return `${left.length ? `<div class="err"><b>${left.length} طالب بلا مقعد:</b> ${left.map(s => esc(s.name) + ' (' + esc(s.cls) + ')').join('، ')}<br>زِد المقاعد أو القاعات، أو غيّر ترتيب الصفوف في القاعات.</div>` : `<div class="good">تم إجلاس ${placed} طالب.</div>`}
+    <div style="overflow:auto">${R.rooms.map(roomMapHTML).join('')}</div>`;
+}
+function seatSheets(kind) {
+  const R = S.seating.result, st = S.settings, cfg = S.seating;
+  const head = sub => `<div class="ph"><div class="l1">${esc(st.school)}</div><div class="l2">${esc(cfg.title)} — ${sub}</div><div>للعام الدراسي ${esc(st.year)}</div></div>`;
+  const where = {}; R.rooms.forEach(rm => rm.grid.forEach((row, r) => row.forEach((x, c) => { if (x && x.sid) where[x.sid] = { room: rm.name, no: x.no, pos: `عمود ${c + 1} / مقعد ${r + 1}` }; })));
+  let out = [];
+  if (kind === 'maps') out = R.rooms.map(rm => ({ name: rm.name, html: `<div class="sheet">${head(esc(rm.name))}<div style="text-align:center">${roomMapHTML(rm)}</div></div>` }));
+  if (kind === 'doors') out = R.rooms.map(rm => { const l = rm.grid.flatMap((row, r) => row.map((x, c) => x && x.sid ? { ...x, s: stu(x.sid), r, c } : null)).filter(x => x && x.s).sort((a, b) => a.no - b.no);
+    return { name: rm.name, html: sheetsJoin(paginate(l).map(pg => head('قائمة ' + esc(rm.name)) + `<table class="pt"><thead><tr><th>رقم الجلوس</th><th>الاسم</th><th>الصف</th><th>الموقع</th><th>التوقيع</th></tr></thead><tbody>${pg.items.map(x => `<tr><td>${x.no}</td><td class="nm">${esc(x.s.name)}</td><td>${esc(x.cls)}</td><td>عمود ${x.c + 1} / مقعد ${x.r + 1}</td><td style="min-width:90px"></td></tr>`).join('')}</tbody></table><p style="margin-top:8px">العدد الكلي في القاعة: ${l.length}</p>`), 'portrait') }; }).filter(x => x.html);
+  if (kind === 'classes') out = cfg.classes.map(c => ({ name: c, html: sheetsJoin(paginate(classStudents(c)).map(pg => head('الصف ' + esc(c)) + `<table class="pt"><thead><tr><th>ت</th><th>الاسم</th><th>القاعة</th><th>رقم الجلوس</th><th>الموقع</th></tr></thead><tbody>${pg.items.map((s, i) => { const w = where[s.id]; return `<tr><td>${pg.start + i + 1}</td><td class="nm">${esc(s.name)}</td><td>${w ? esc(w.room) : '—'}</td><td>${w ? w.no : '—'}</td><td>${w ? w.pos : ''}</td></tr>`; }).join('')}</tbody></table>`), 'portrait') })).filter(x => x.html);
+  // فاصل صفحة بين الأقسام، دون فاصل بعد آخر صفحة
+  out.forEach((s, i) => { if (i < out.length - 1) { const k = s.html.lastIndexOf('<div class="sheet'); s.html = s.html.slice(0, k) + s.html.slice(k).replace('<div class="sheet', '<div class="pbreak sheet'); } });
+  return out;
+}
+function printSeat(kind) { const sh = seatSheets(kind); showPrint({ maps: 'خرائط القاعات', doors: 'قوائم القاعات', classes: 'قوائم الصفوف' }[kind], sh.map(s => s.html).join(''), { portrait: kind !== 'maps', xlsx: () => xlsxFromHTML(sh), xlsxName: 'توزيع_' + kind }); }
+function exportSeat() { saveFile(xlsxFromHTML([...seatSheets('doors'), ...seatSheets('classes').map(s => ({ ...s, name: 'صف ' + s.name }))]), 'توزيع_القاعات.xlsx'); }
+
+// ======================================================================
+//  الإعدادات
+// ======================================================================
+function rSettings() {
+  const st = S.settings;
+  const subjCounts = id => [...S.grades.values()].filter(g => g.subj === id).length;
+  return `
+  <div class="card"><h2>معلومات المدرسة</h2>
+    <div class="row">
+      <div class="f" style="flex:2 1 260px"><label>اسم المدرسة (كما يظهر في الاستمارات)</label><input class="in" id="sSchool" value="${esc(st.school)}"></div>
+      <div class="f"><label>العام الدراسي</label><input class="in" id="sYear" value="${esc(st.year)}"></div>
+      <div class="f"><label>المدرسة</label><select class="in" id="sGirls">${opts([['1', 'بنات (التلميذات)'], ['0', 'بنين (التلاميذ)']], st.girls ? '1' : '0')}</select></div>
+    </div>
+    <div class="row" style="margin-top:.5rem">
+      <div class="f"><label>اسم معلم المادة</label><input class="in" id="sTeacher" value="${esc(st.teacher)}"></div>
+      <div class="f"><label>اسم مدير المدرسة</label><input class="in" id="sPrincipal" value="${esc(st.principal)}"></div>
+    </div>
+    <div class="btns"><button class="btn g" onclick="saveSchool()">${ic('check')} حفظ</button></div>
+  </div>
+  <div class="card"><h2>الصفوف</h2>
+    <div class="row"><div class="f"><input class="in" id="newCls" placeholder="مثال: السادس أ" onkeydown="if(event.key==='Enter')addClass()"></div><button class="btn g" onclick="addClass()">${ic('plus')} إضافة صف</button></div>
+    <div style="margin-top:.6rem">${S.classes.map((c, i) => `<div class="li"><div><b>${esc(c)}</b> <span class="muted">${classStudents(c).length} طالب</span></div>
+      <div class="acts"><button class="btn sm" onclick="moveClass(${i},-1)" ${i ? '' : 'disabled'}>▲</button><button class="btn sm" onclick="moveClass(${i},1)" ${i < S.classes.length - 1 ? '' : 'disabled'}>▼</button>
+      <button class="btn sm" onclick="renameClass(${i})">${ic('edit')} تسمية</button><button class="btn sm r" onclick="deleteClass(${i})">${ic('trash')}</button></div></div>`).join('') || '<p class="muted">لا توجد صفوف.</p>'}</div>
+  </div>
+  <div class="card"><h2>المواد ونماذج درجاتها الشهرية</h2>
+    <div class="row">
+      <div class="f"><label>اسم المادة</label><input class="in" id="newSubj" placeholder="مثال: الرياضيات"></div>
+      <div class="f"><label>نموذج الدرجات</label><select class="in" id="newSubjPreset">${opts(PRESET_NAMES, 'single')}</select></div>
+      <button class="btn g" onclick="addSubject()">${ic('plus')} إضافة مادة</button></div>
+    <div style="margin-top:.6rem">${S.subjects.map(s => `<div class="li"><div><b>${esc(s.name)}</b><br><span class="muted">${s.scheme.bands.map(b => `${esc(b.name)} ${bandMax(b)}`).join(' + ')} = ${schemeMax(s.scheme)} • ${schemeItems(s.scheme).length} عمود</span></div>
+      <div class="acts"><button class="btn sm p" onclick="editScheme('${s.id}')">${ic('edit')} تعديل الأعمدة</button><button class="btn sm" onclick="renameSubject('${s.id}')">تسمية</button><button class="btn sm r" onclick="deleteSubject('${s.id}',${subjCounts(s.id)})">${ic('trash')}</button></div></div>`).join('')}</div>
+  </div>
+  <div class="card"><h2>أشهر السجل السنوي والاحتساب</h2>
+    <div class="row">
+      <div class="f"><label>أشهر الفصل الأول</label><div>${monthPicker('term1')}</div></div>
+      <div class="f"><label>أشهر الفصل الثاني</label><div>${monthPicker('term2')}</div></div>
+    </div>
+    <label class="chip" style="margin-top:.6rem;font-size:.9rem"><input type="checkbox" ${st.round ? 'checked' : ''} onchange="S.settings.round=this.checked;saveMeta('settings')"> تقريب الكسور لأقرب عدد صحيح في المعدلات والسعي والنهائية</label>
+  </div>
+  <div class="card"><h2>الطباعة والتصدير</h2>
+    <div class="row"><div class="f" style="flex:0 1 220px"><label>عدد الطلاب في كل صفحة</label><input class="in" type="number" min="5" max="60" value="${perPage()}" onchange="S.settings.perPage=Math.max(5,Math.min(60,+this.value||20));saveMeta('settings');toast('تم الحفظ')"></div></div>
+    <p class="muted" style="margin-top:.4rem">ينطبق على الطباعة وPDF وExcel وWord: كل صفحة بعنوانها ورأس جدولها وتوقيعها، ولا تُنشأ صفحة إضافية إلا إذا بقي طلاب.</p>
+  </div>
+  <div class="card"><h2>العرض</h2>
+    <label>حجم الخط: <b id="fsv">${st.font}%</b></label>
+    <input type="range" min="80" max="140" step="5" value="${st.font}" style="width:100%" oninput="S.settings.font=+this.value;$('fsv').textContent=this.value+'%';applyFont()" onchange="saveMeta('settings')">
+  </div>
+  <div class="card"><h2>الذكاء الاصطناعي (اختياري)</h2>
+    <div class="row"><div class="f" style="flex:2 1 260px"><label>مفتاح Gemini API (يُحفظ على هذا الجهاز فقط)</label><input class="in" type="password" dir="ltr" id="sKey" value="${esc(st.aiKey)}" placeholder="AIza..."></div>
+      <div class="f"><label>النموذج</label><input class="in" dir="ltr" id="sModel" value="${esc(st.aiModel)}"></div>
+      <button class="btn g" onclick="S.settings.aiKey=$('sKey').value.trim();S.settings.aiModel=$('sModel').value.trim()||'gemini-2.5-flash';saveMeta('settings');toast('تم الحفظ')">${ic('check')} حفظ</button></div>
+  </div>
+  <div class="card"><h2>النسخ الاحتياطي</h2>
+    <div class="warn">البيانات محفوظة داخل هذا الجهاز فقط. خذ نسخة احتياطية أسبوعياً واحفظها في «الملفات» أو أرسلها لنفسك.</div>
+    <div class="btns"><button class="btn g" onclick="exportBackup()">${ic('down')} حفظ نسخة احتياطية</button>
+      <label class="btn b">${ic('up')} استرجاع نسخة<input type="file" class="hidden" accept=".json" onchange="importBackup(this)"></label>
+      <button class="btn r" onclick="resetAll()">${ic('trash')} حذف كل البيانات</button></div>
+    <p class="muted">الإصدار 2.1</p>
+  </div>`;
+}
+function monthPicker(term) {
+  const cur = S.settings[term];
+  return ACADEMIC_MONTHS.map(m => `<label class="chip" style="cursor:pointer;${cur.includes(m) ? 'background:#d6e6f7' : ''}"><input type="checkbox" ${cur.includes(m) ? 'checked' : ''} onchange="toggleMonth('${term}','${m}',this.checked)"> ${m}</label>`).join('');
+}
+function toggleMonth(term, m, on) {
+  let a = S.settings[term].filter(x => x !== m); if (on) a.push(m);
+  a.sort((x, y) => ACADEMIC_MONTHS.indexOf(x) - ACADEMIC_MONTHS.indexOf(y));
+  if (!a.length) { toast('يجب اختيار شهر واحد على الأقل', 'bad'); return render(); }
+  const other = term === 'term1' ? 'term2' : 'term1';
+  S.settings[other] = S.settings[other].filter(x => !a.includes(x) || S.settings[other].length === 1);
+  S.settings[term] = a; saveMeta('settings'); render();
+}
+function applyFont() { document.documentElement.style.fontSize = (16 * (S.settings.font || 100) / 100) + 'px'; }
+async function saveSchool() {
+  Object.assign(S.settings, { school: $('sSchool').value.trim(), year: $('sYear').value.trim(), girls: $('sGirls').value === '1', teacher: $('sTeacher').value.trim(), principal: $('sPrincipal').value.trim() });
+  await saveMeta('settings'); render(); toast('تم حفظ معلومات المدرسة');
+}
+async function addClass() {
+  const n = $('newCls').value.trim(); if (!n) return;
+  if (S.classes.includes(n)) return toast('الصف موجود', 'bad');
+  S.classes.push(n); await saveMeta('classes'); render(); setTimeout(() => $('newCls').focus(), 50);
+}
+async function moveClass(i, d) { const a = S.classes; [a[i], a[i + d]] = [a[i + d], a[i]]; await saveMeta('classes'); render(); }
+async function renameClass(i) {
+  const old = S.classes[i], n = (prompt('الاسم الجديد للصف', old) || '').trim();
+  if (!n || n === old) return; if (S.classes.includes(n)) return toast('يوجد صف بهذا الاسم', 'bad');
+  S.classes[i] = n;
+  const moved = S.students.filter(s => s.cls === old); moved.forEach(s => s.cls = n);
+  if (S.timetable.plans[old]) { S.timetable.plans[n] = S.timetable.plans[old]; delete S.timetable.plans[old]; }
+  if (S.timetable.result && S.timetable.result.grid[old]) { S.timetable.result.grid[n] = S.timetable.result.grid[old]; delete S.timetable.result.grid[old]; }
+  S.seating.classes = S.seating.classes.map(c => c === old ? n : c); S.seating.rooms.forEach(r => r.seq = r.seq.map(c => c === old ? n : c));
+  if (S.seating.result) S.seating.result.rooms.forEach(r => r.grid.flat().forEach(x => { if (x && x.cls === old) x.cls = n; }));
+  S.exams.forEach(e => { if (e.cls === old) { e.cls = n; dbPut('exams', e); } });
+  await Promise.all([saveMeta('classes'), saveMeta('timetable'), saveMeta('seating'), dbPutMany('students', moved)]);
+  render(); toast('تمت إعادة التسمية');
+}
+async function deleteClass(i) {
+  const c = S.classes[i];
+  if (classStudents(c).length) return toast('الصف فيه طلاب — انقلهم أو احذفهم أولاً', 'bad');
+  if (!confirm(`حذف الصف ${c}؟`)) return;
+  S.classes.splice(i, 1); delete S.timetable.plans[c];
+  await Promise.all([saveMeta('classes'), saveMeta('timetable')]); render();
+}
+async function addSubject() {
+  const n = $('newSubj').value.trim(); if (!n) return toast('اكتب اسم المادة', 'bad');
+  if (S.subjects.some(s => s.name === n)) return toast('المادة موجودة', 'bad');
+  S.subjects.push({ id: uid(), name: n, scheme: PRESETS[$('newSubjPreset').value]() }); await saveMeta('subjects'); render();
+}
+async function renameSubject(id) {
+  const s = getSubj(id), n = (prompt('اسم المادة', s.name) || '').trim(); if (!n) return;
+  s.name = n; await saveMeta('subjects'); render();
+}
+async function deleteSubject(id, n) {
+  const s = getSubj(id);
+  if (!confirm(`حذف مادة "${s.name}"${n ? ` مع ${n} سجل درجات` : ''}؟ لا يمكن التراجع.`)) return;
+  S.subjects = S.subjects.filter(x => x.id !== id);
+  const keys = [...S.grades.values()].filter(g => g.subj === id).map(g => g.key); keys.forEach(k => S.grades.delete(k));
+  await saveMeta('subjects'); if (keys.length) await dbDelMany('grades', keys); render();
+}
+// محرر أعمدة المادة
+function editScheme(id) { UI.schemeSubj = id; UI.schemeDraft = clone(getSubj(id).scheme); drawScheme(); }
+function drawScheme() {
+  const d = UI.schemeDraft, s = getSubj(UI.schemeSubj), tot = schemeMax(d);
+  const body = `<div class="hint">الترتيب هنا = ترتيب الأعمدة في الاستمارة من اليمين. «القسم» عنوان كبير (مثل الشفوي/التحريري) ويمكن أن يظهر له عمود مجموع، و«المجموعة» عنوان فرعي اختياري (مثل القرآن الكريم).</div>
+    <div class="btns">${PRESET_NAMES.map(([k, l]) => `<button class="btn sm" onclick="if(confirm('استبدال الأعمدة الحالية بـ ${l}؟')){UI.schemeDraft=PRESETS.${k}();drawScheme()}">${esc(l)}</button>`).join('')}</div>
+    ${d.bands.map((b, bi) => `<div class="band-box"><div class="item-row"><b>قسم:</b><input class="in" value="${esc(b.name)}" onchange="UI.schemeDraft.bands[${bi}].name=this.value">
+      <label class="chip"><input type="checkbox" ${b.total ? 'checked' : ''} onchange="UI.schemeDraft.bands[${bi}].total=this.checked"> عمود مجموع (${bandMax(b)})</label>
+      <button class="btn sm" onclick="schMove('bands',${bi},-1)" ${bi ? '' : 'disabled'}>▲</button><button class="btn sm r" onclick="UI.schemeDraft.bands.splice(${bi},1);drawScheme()">${ic('trash')}</button></div>
+      ${b.groups.map((g, gi) => `<div class="grp-box"><div class="item-row"><span class="muted">مجموعة:</span><input class="in" placeholder="(بدون عنوان فرعي)" value="${esc(g.name)}" onchange="UI.schemeDraft.bands[${bi}].groups[${gi}].name=this.value">
+        <button class="btn sm r" onclick="UI.schemeDraft.bands[${bi}].groups.splice(${gi},1);drawScheme()">${ic('trash')}</button></div>
+        ${g.items.map((it, ii) => `<div class="item-row" style="padding-right:1rem"><input class="in" value="${esc(it.name)}" placeholder="اسم العمود" onchange="UI.schemeDraft.bands[${bi}].groups[${gi}].items[${ii}].name=this.value">
+          <input class="in" type="number" min="0" style="width:80px" value="${it.max}" onchange="UI.schemeDraft.bands[${bi}].groups[${gi}].items[${ii}].max=+this.value||0;drawScheme()">
+          <button class="btn sm r" onclick="UI.schemeDraft.bands[${bi}].groups[${gi}].items.splice(${ii},1);drawScheme()">×</button></div>`).join('')}
+        <button class="btn sm" onclick="UI.schemeDraft.bands[${bi}].groups[${gi}].items.push(itm('',5));drawScheme()">${ic('plus')} عمود</button></div>`).join('')}
+      <button class="btn sm" onclick="UI.schemeDraft.bands[${bi}].groups.push({id:uid(),name:'',items:[itm('',5)]});drawScheme()">${ic('plus')} مجموعة فرعية</button></div>`).join('')}
+    <button class="btn" onclick="UI.schemeDraft.bands.push({id:uid(),name:'',total:true,groups:[{id:uid(),name:'',items:[itm('',10)]}]});drawScheme()">${ic('plus')} قسم جديد</button>
+    <div class="${tot === 100 ? 'good' : 'warn'}" style="margin-top:.6rem">المجموع الكلي = <b>${tot}</b> ${tot === 100 ? '' : '(الاستمارات عادة من 100)'}</div>`;
+  openModal('أعمدة درجات: ' + s.name, body, `<button class="btn g" onclick="saveScheme()">${ic('check')} حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button>`);
+}
+function schMove(k, i, d) { const a = UI.schemeDraft[k]; [a[i], a[i + d]] = [a[i + d], a[i]]; drawScheme(); }
+async function saveScheme() {
+  const d = UI.schemeDraft;
+  d.bands = d.bands.map(b => ({ ...b, groups: b.groups.map(g => ({ ...g, items: g.items.filter(i => i.name.trim()) })).filter(g => g.items.length) })).filter(b => b.groups.length);
+  for (const b of d.bands) if (!b.name.trim()) return toast('اكتب اسم كل قسم', 'bad');
+  if (!d.bands.length) return toast('أضف عموداً واحداً على الأقل', 'bad');
+  if (schemeMax(d) !== 100 && !confirm(`المجموع ${schemeMax(d)} وليس 100. هل تريد الحفظ؟`)) return;
+  getSubj(UI.schemeSubj).scheme = d; await saveMeta('subjects'); closeModal(); render(); toast('تم حفظ أعمدة المادة');
+}
+// النسخ الاحتياطي
+async function exportBackup() {
+  await flushSaves();
+  const data = { app: 'granada-school', version: 2, date: new Date().toISOString(), settings: S.settings, classes: S.classes, subjects: S.subjects, students: S.students, grades: [...S.grades.values()], exams: S.exams, timetable: S.timetable, seating: S.seating };
+  saveFile(new Blob([JSON.stringify(data)], { type: 'application/json' }), `نسخة_احتياطية_${new Date().toISOString().slice(0, 10)}.json`);
+}
+async function importBackup(input) {
+  const f = input.files[0]; input.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (d.app !== 'granada-school') throw new Error('هذا ليس ملف نسخة احتياطية لهذا البرنامج');
+    if (!confirm('سيتم استبدال كل البيانات الحالية بمحتوى النسخة. متابعة؟')) return;
+    for (const s of ['meta', 'students', 'grades', 'exams']) await dbClear(s);
+    await dbPutMany('meta', ['settings', 'classes', 'subjects', 'timetable', 'seating'].map(k => ({ k, v: d[k] })));
+    await dbPutMany('students', d.students || []); await dbPutMany('grades', d.grades || []); await dbPutMany('exams', d.exams || []);
+    await loadAll(); render(); toast('تم استرجاع النسخة بنجاح');
+  } catch (e) { toast('تعذّر الاسترجاع: ' + e.message, 'bad'); }
+}
+async function resetAll() {
+  if (!confirm('حذف كل البيانات نهائياً؟')) return;
+  if (prompt('للتأكيد اكتب: حذف') !== 'حذف') return;
+  for (const s of ['meta', 'students', 'grades', 'exams']) await dbClear(s);
+  await loadAll(); render(); toast('تم الحذف');
+}
+
+// ======================================================================
+//  المعاينة والطباعة
+// ======================================================================
+function showPrint(title, html, o = {}) {
+  $('pageSize').textContent = `@page{size:A4 ${o.portrait ? 'portrait' : 'landscape'};margin:8mm}`;
+  const bar = [`<button class="btn r" onclick="closePrint()">${ic('back')} رجوع</button>`,
+    `<button class="btn g" onclick="doPrint()">${ic('print')} طباعة / PDF</button>`];
+  window._pv = { title, o };
+  bar.push(`<button class="btn" onclick="pvExcel()">${ic('xls')} Excel</button>`);
+  bar.push(`<button class="btn y" onclick="pvWord()">${ic('doc')} Word</button>`);
+  bar.push(`<span class="t">${esc(title)}</span>`);
+  $('pvBar').innerHTML = bar.join('');
+  $('printBody').innerHTML = html;
+  $('printView').classList.remove('hidden'); document.body.classList.add('pv-open');
+  window._pvY = window.scrollY; window.scrollTo(0, 0);
+  try { history.pushState({ pv: 1 }, ''); window._pvPushed = true; } catch (e) {}
+}
+function hidePrint() { $('printView').classList.add('hidden'); document.body.classList.remove('pv-open'); $('printBody').innerHTML = ''; window.scrollTo(0, window._pvY || 0); }
+function closePrint() { hidePrint(); if (window._pvPushed) { window._pvPushed = false; history.back(); } }
+window.addEventListener('popstate', () => { if (!$('printView').classList.contains('hidden')) { window._pvPushed = false; hidePrint(); } });
+function doPrint() { try { window.print(); } catch (e) { toast('الطباعة غير متاحة هنا — استخدم زر المشاركة في المتصفح أو Excel', 'bad'); } }
+function pvExcel() { const { o, title } = window._pv; const blob = o.xlsx ? o.xlsx() : xlsxFromHTML([{ name: title.slice(0, 28), html: $('printBody').innerHTML, landscape: !o.portrait }]); saveFile(blob, (o.xlsxName || title) + '.xlsx'); }
+function pvWord() { const { o, title } = window._pv; saveFile(o.docx ? o.docx() : makeDOCXBlob(title, $('printBody').innerHTML, { landscape: !o.portrait }), (o.docxName || o.xlsxName || title) + '.docx'); }
+
+// ======================================================================
+//  الملفات: حفظ / قراءة Excel / كتابة XLSX و DOCX بدون مكتبات
+// ======================================================================
+async function saveFile(blob, filename) {
+  filename = filename.replace(/[\\/:*?"<>|]/g, '-');
+  const touchApple = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (touchApple || navigator.standalone || matchMedia('(display-mode: standalone)').matches) {
+    try {
+      const f = new File([blob], filename, { type: blob.type || 'application/octet-stream' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: filename }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  toast('تم تنزيل ' + filename);
+}
+// قراءة xlsx (يستعمل DecompressionStream المدمج في المتصفح) أو csv
+async function inflateRaw(u8) { const ds = new DecompressionStream('deflate-raw'); return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(ds)).arrayBuffer()); }
+async function unzip(buf) {
+  const u = new Uint8Array(buf), dv = new DataView(buf), dec = new TextDecoder();
+  let e = u.length - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('الملف ليس بصيغة xlsx صحيحة');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const files = {};
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = dec.decode(u.subarray(p + 46, p + 46 + nl));
+    const start = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true);
+    files[name] = { method, raw: u.subarray(start, start + csize) };
+    p += 46 + nl + xl + cl;
+  }
+  return files;
+}
+async function zipText(files, name) {
+  const f = files[name] || files[Object.keys(files).find(k => k.toLowerCase() === name.toLowerCase())]; if (!f) return null;
+  if (f.method !== 0 && typeof DecompressionStream === 'undefined') throw new Error('حدّث نظام الجهاز لقراءة Excel، أو احفظ الملف بصيغة CSV');
+  return new TextDecoder().decode(f.method === 0 ? f.raw : await inflateRaw(f.raw));
+}
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const first = text.split('\n')[0], d = (first.match(/\t/g) || []).length > (first.match(/,/g) || []).length ? '\t' : (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; }
+    else if (ch === '"') q = true; else if (ch === d) { row.push(cur); cur = ''; } else if (ch === '\n') { row.push(cur.replace(/\r$/, '')); rows.push(row); row = []; cur = ''; } else cur += ch;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+async function readSpreadsheet(file) {
+  if (/\.(csv|txt)$/i.test(file.name)) return [{ name: 'csv', rows: parseCSV(await file.text()) }];
+  if (/\.xls$/i.test(file.name)) throw new Error('صيغة xls القديمة غير مدعومة — احفظ الملف بصيغة xlsx');
+  const files = await unzip(await file.arrayBuffer()), X = s => new DOMParser().parseFromString(s, 'application/xml');
+  const all = (node, tag) => [...node.getElementsByTagNameNS('*', tag)];
+  const shared = []; const sst = await zipText(files, 'xl/sharedStrings.xml');
+  if (sst) all(X(sst), 'si').forEach(si => shared.push(all(si, 't').filter(t => !t.parentNode || t.parentNode.localName !== 'rPh').map(t => t.textContent).join('')));
+  const wb = X(await zipText(files, 'xl/workbook.xml')), relsTxt = await zipText(files, 'xl/_rels/workbook.xml.rels');
+  const rels = {}; if (relsTxt) all(X(relsTxt), 'Relationship').forEach(r => rels[r.getAttribute('Id')] = r.getAttribute('Target'));
+  const out = [];
+  for (const sh of all(wb, 'sheet')) {
+    const rid = sh.getAttribute('r:id') || [...sh.attributes].find(a => a.localName === 'id' && a.name !== 'sheetId')?.value;
+    let target = rels[rid] || 'worksheets/sheet1.xml'; target = target.replace(/^\/?xl\//, '').replace(/^\//, '');
+    const txt = await zipText(files, 'xl/' + target); if (!txt) continue;
+    const rows = [];
+    all(X(txt), 'row').forEach(r => {
+      const ri = (+r.getAttribute('r') || rows.length + 1) - 1, row = [];
+      all(r, 'c').forEach((c, idx) => {
+        const ref = c.getAttribute('r'); let ci = idx;
+        if (ref) { const L = ref.replace(/\d+/g, ''); ci = [...L].reduce((a, ch) => a * 26 + ch.charCodeAt(0) - 64, 0) - 1; }
+        const t = c.getAttribute('t'), v = all(c, 'v')[0];
+        let val = t === 'inlineStr' ? all(c, 't').map(x => x.textContent).join('') : v ? v.textContent : '';
+        if (t === 's') val = shared[+val] ?? '';
+        else if (t !== 'str' && t !== 'inlineStr' && val !== '' && !isNaN(val)) val = Number(val);
+        row[ci] = val;
+      });
+      rows[ri] = row;
+    });
+    out.push({ name: sh.getAttribute('name'), rows: Array.from(rows, r => r || []) });
+  }
+  return out;
+}
+// كتابة XLSX
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(entries) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const e of entries) {
+    const nb = enc.encode(e.name), data = e.data, crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, nb.length, true);
+    parts.push(new Uint8Array(lh.buffer), nb, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, nb.length, true); ch.setUint32(42, off, true);
+    central.push(new Uint8Array(ch.buffer), nb); off += 30 + nb.length + data.length;
+  }
+  const cd = sum(central.map(c => c.length)), eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0, 0x06054b50, true); eo.setUint16(8, entries.length, true); eo.setUint16(10, entries.length, true); eo.setUint32(12, cd, true); eo.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(eo.buffer)]);
+}
+const xCol = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = (i - 1 - m) / 26; } return s; };
+const xe = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function makeXLSXBlob(sheets) {
+  const enc = new TextEncoder(), E = [];
+  const AL = rot => `<alignment horizontal="center" vertical="center" wrapText="1" readingOrder="2"${rot ? ' textRotation="90"' : ''}/>`;
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font><font><b/><sz val="13"/><name val="Arial"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFCE9C6"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9EFDC"/></patternFill></fill></fills><borders count="2"><border/><border><left style="thin"><color rgb="FF333333"/></left><right style="thin"><color rgb="FF333333"/></right><top style="thin"><color rgb="FF333333"/></top><bottom style="thin"><color rgb="FF333333"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="8">`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">${AL()}</xf>`
+    + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL()}</xf>`
+    + `<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL()}</xf>`
+    + `<xf numFmtId="0" fontId="2" fillId="4" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL()}</xf>`
+    + `<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center" readingOrder="2"/></xf>`
+    + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL(1)}</xf>`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center" readingOrder="2"/></xf>`
+    + `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center" readingOrder="2"/></xf>`
+    + `</cellXfs></styleSheet>`;
+  let ct = '', wbs = '', wbr = ''; const used = new Set();
+  sheets.forEach((sh, i) => {
+    const n = i + 1;
+    let nm = String(sh.name || 'Sheet' + n).replace(/[\\/?*[\]:]/g, '-').slice(0, 28); while (used.has(nm)) nm = nm.slice(0, 25) + '_' + n; used.add(nm);
+    ct += `<Override PartName="/xl/worksheets/sheet${n}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
+    wbs += `<sheet name="${xe(nm)}" sheetId="${n}" r:id="rId${n}"/>`;
+    wbr += `<Relationship Id="rId${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${n}.xml"/>`;
+    const maxC = Math.max(1, ...sh.rows.map(r => r.length));
+    const w = Array(maxC).fill(5);
+    sh.rows.forEach(r => r.forEach((c, ci) => { if (c && !c.title && !c.h && !c.note && c.v !== '') w[ci] = Math.max(w[ci], String(c.v).length * 1.15 + 2); }));
+    let cols = '<cols>'; w.forEach((x, c) => cols += `<col min="${c + 1}" max="${c + 1}" width="${Math.min(38, Math.round(x))}" customWidth="1"/>`); cols += '</cols>';
+    let rx = '';
+    sh.rows.forEach((row, r) => {
+      let cx = '', tall = false;
+      row.forEach((raw, c) => {
+        if (raw === undefined) return;
+        const cell = raw && typeof raw === 'object' && 'v' in raw ? raw : { v: raw };
+        if (cell.vert) tall = true;
+        const s = cell.title ? 4 : cell.note ? 7 : cell.vert ? 5 : cell.h ? 1 : cell.fill === 1 ? 2 : cell.fill === 2 ? 3 : cell.left ? 6 : 0, ref = xCol(c) + (r + 1);
+        cx += (typeof cell.v === 'number' && isFinite(cell.v)) ? `<c r="${ref}" s="${s}"><v>${cell.v}</v></c>` : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xe(cell.v)}</t></is></c>`;
+      });
+      rx += `<row r="${r + 1}"${tall ? ' ht="95" customHeight="1"' : ''}>${cx}</row>`;
+    });
+    const merges = sh.merges || [], breaks = sh.breaks || [];
+    const mx = merges.length ? `<mergeCells count="${merges.length}">${merges.map(m => `<mergeCell ref="${m}"/>`).join('')}</mergeCells>` : '';
+    const bx = breaks.length ? `<rowBreaks count="${breaks.length}" manualBreakCount="${breaks.length}">${breaks.map(b => `<brk id="${b}" max="16383" man="1"/>`).join('')}</rowBreaks>` : '';
+    E.push({ name: `xl/worksheets/sheet${n}.xml`, data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews>${cols}<sheetData>${rx}</sheetData>${mx}<printOptions horizontalCentered="1"/><pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="${sh.landscape === false ? 'portrait' : 'landscape'}" fitToWidth="1" fitToHeight="0"/>${bx}</worksheet>`) });
+  });
+  E.push({ name: '[Content_Types].xml', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${ct}</Types>`) });
+  E.push({ name: '_rels/.rels', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`) });
+  E.push({ name: 'xl/workbook.xml', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${wbs}</sheets></workbook>`) });
+  E.push({ name: 'xl/_rels/workbook.xml.rels', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${wbr}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`) });
+  E.push({ name: 'xl/styles.xml', data: enc.encode(styles) });
+  return new Blob([zipStore(E)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+// تحويل جدول HTML إلى مصفوفة (مع معلومات الدمج والنص العمودي)
+function tableMatrix(table, r0, merges) {
+  const grid = [];
+  [...table.rows].forEach((tr, r) => {
+    grid[r] = grid[r] || []; let c = 0;
+    [...tr.cells].forEach(cell => {
+      while (grid[r][c] !== undefined) c++;
+      const txt = cell.textContent.replace(/\s+/g, ' ').trim(), num = txt !== '' && !isNaN(Number(txt));
+      const isH = cell.tagName === 'TH', cl = cell.className || '';
+      const fill = /tot|pass/.test(cl) ? 2 : /sub/.test(cl) ? 1 : 0;
+      const rs = cell.rowSpan || 1, cs = cell.colSpan || 1, vert = isH && !!cell.querySelector('.vt');
+      for (let dr = 0; dr < rs; dr++) for (let dc = 0; dc < cs; dc++) {
+        grid[r + dr] = grid[r + dr] || [];
+        grid[r + dr][c + dc] = dr || dc ? { v: '', h: isH, cov: true, dr, dc, cs } : { v: num ? Number(txt) : txt, h: isH, fill, rs, cs, vert, left: /nm/.test(cl) };
+      }
+      if (merges && (rs > 1 || cs > 1)) merges.push(`${xCol(c)}${r0 + r + 1}:${xCol(c + cs - 1)}${r0 + r + rs}`);
+      c += cs;
+    });
+  });
+  return grid;
+}
+// كل ".sheet" = صفحة: عنوانها + جدولها + التوقيع، مع فاصل صفحة في Excel
+function sheetParts(root) {
+  const pages = [...root.querySelectorAll('.sheet')];
+  return (pages.length ? pages : [root]).map(pg => ({
+    heads: [...pg.querySelectorAll('.ph .l1,.ph .l2,.ph > div:not(.l1):not(.l2),.ph3 > div')].map(e => { const c = e.cloneNode(true); c.querySelectorAll('br').forEach(b => b.replaceWith(' • ')); c.querySelectorAll('div').forEach(d => d.prepend(' — ')); return c.textContent.replace(/\s+/g, ' ').trim(); }).filter(Boolean),
+    tables: [...pg.querySelectorAll('table')].filter(t => !t.parentElement.closest('table')),
+    foot: [...pg.querySelectorAll('.sig > div, .pno, p')].filter(e => !e.closest('table')).map(e => { const c = e.cloneNode(true); c.querySelectorAll('br').forEach(b => b.replaceWith(': ')); return c.textContent.replace(/\s+/g, ' ').trim(); }).filter(Boolean)
+  }));
+}
+function xlsxFromHTML(list) {
+  const sheets = list.map(({ name, html, landscape }) => {
+    const doc = new DOMParser().parseFromString(`<div id="r">${html}</div>`, 'text/html'), rows = [], merges = [], breaks = [];
+    const parts = sheetParts(doc.getElementById('r'));
+    parts.forEach((pg, pi) => {
+      const titleRows = [];
+      pg.heads.forEach(t => { titleRows.push(rows.length); rows.push([{ v: t, title: true }]); });
+      let width = 1;
+      pg.tables.forEach(t => { const m = tableMatrix(t, rows.length, merges); m.forEach(r => { width = Math.max(width, r.length); rows.push(r); }); });
+      titleRows.forEach(r => { if (width > 1) merges.push(`A${r + 1}:${xCol(width - 1)}${r + 1}`); });
+      if (pg.foot.length) { rows.push([]); const fr = []; const step = Math.max(1, Math.floor((width - 3) / Math.max(1, pg.foot.length - 1))); pg.foot.forEach((v, k) => { fr[Math.min(width - 1, 2 + k * step)] = { v, note: true }; }); rows.push(fr); }
+      if (pi < parts.length - 1) breaks.push(rows.length);
+    });
+    return { name, rows, merges, breaks, landscape: landscape !== false && !/portrait/.test(html.slice(0, 200)) };
+  });
+  return makeXLSXBlob(sheets);
+}
+// Word: صفحة لكل ".sheet" مع تكرار رأس الجدول، ودمج الخلايا، ونص عمودي كما في الاستمارة
+function makeDOCXBlob(title, bodyHTML, opt = {}) {
+  const enc = new TextEncoder(), doc = new DOMParser().parseFromString(`<div id="r">${bodyHTML}</div>`, 'text/html');
+  const root = doc.getElementById('r'), land = opt.landscape === undefined ? !/sheet portrait/.test(bodyHTML) : opt.landscape;
+  const W = land ? 15400 : 10200;
+  const P = (t, o = {}) => `<w:p><w:pPr><w:bidi/><w:spacing w:before="0" w:after="${o.after ?? 60}"/><w:jc w:val="${o.center ? 'center' : 'right'}"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>${o.b ? '<w:b/><w:bCs/>' : ''}<w:sz w:val="${o.sz || 24}"/><w:szCs w:val="${o.sz || 24}"/><w:rtl/></w:rPr><w:t xml:space="preserve">${xe(t)}</w:t></w:r></w:p>`;
+  const TB = (tbl, small) => {
+    const m = tableMatrix(tbl, 0, null), nc = Math.max(...m.map(r => r.length));
+    const nameCol = (m.find(r => r.some(c => c && c.left)) || []).findIndex(c => c && c.left);
+    const unit = Math.floor(W / (nc + (nameCol >= 0 ? 3 : 0)));
+    const widths = Array.from({ length: nc }, (_, i) => i === nameCol ? unit * 4 : unit);
+    const headRows = m.filter(r => r.some(c => c && c.h)).length;
+    const sz = small ? 18 : 22;
+    let x = `<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="${W}" w:type="dxa"/><w:tblBorders>` + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(s => `<w:${s} w:val="single" w:sz="6" w:color="333333"/>`).join('') + `</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
+    m.forEach((row, ri) => {
+      const vertRow = row.some(c => c && c.vert);
+      x += `<w:tr><w:trPr><w:cantSplit/>${ri < headRows ? '<w:tblHeader/>' : ''}</w:trPr>`;
+      for (let ci = 0; ci < nc; ci++) {
+        const c = row[ci] || { v: '' };
+        if (c.cov && c.dc > 0) continue;
+        const span = c.cov ? c.cs : (c.cs || 1), wsum = widths.slice(ci, ci + span).reduce((a, b) => a + b, 0);
+        const fill = c.h ? 'DCE6F2' : c.fill === 1 ? 'FCE9C6' : c.fill === 2 ? 'D9EFDC' : '';
+        const pr = `<w:tcW w:w="${wsum}" w:type="dxa"/>${span > 1 ? `<w:gridSpan w:val="${span}"/>` : ''}${c.cov ? '<w:vMerge/>' : (c.rs > 1 ? '<w:vMerge w:val="restart"/>' : '')}${fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : ''}<w:vAlign w:val="center"/>`;
+        x += `<w:tc><w:tcPr>${pr}</w:tcPr>${P(c.cov ? '' : String(c.v), { center: !c.left, b: c.h || c.fill, sz, after: 0 })}</w:tc>`;
+      }
+      x += '</w:tr>';
+    });
+    return x + '</w:tbl>';
+  };
+  const BL = new Set(['DIV', 'P', 'H1', 'H2', 'H3', 'SECTION', 'TABLE']);
+  const blocksOf = node => {
+    let out = '';
+    (function walk(n) {
+      if (n.nodeType === 3) { const t = n.textContent.replace(/\s+/g, ' ').trim(); if (t) out += para(n.parentElement, t); return; }
+      if (n.nodeType !== 1 || /SCRIPT|STYLE/.test(n.tagName)) return;
+      if (n.tagName === 'TABLE') { out += TB(n, n.classList.contains('pt')); return; }
+      if ([...n.children].some(c => BL.has(c.tagName) || c.tagName === 'BR')) { [...n.childNodes].forEach(walk); return; }
+      const t = n.textContent.replace(/\s+/g, ' ').trim(); if (t) out += para(n, t);
+    })(node);
+    return out;
+  };
+  const para = (el, t) => {
+    const center = !!el.closest('.ph,.sig,.exam-title,.wish,.c,.pno');
+    const big = !!el.closest('.ph .l1,.exam-title,.c');
+    const b = big || !!el.closest('.ph .l2,.sig,.qt,.eh-school,.wish,.ph3,b,strong');
+    return P(t, { center, b, sz: big ? 28 : el.closest('.pno') ? 18 : 24 });
+  };
+  const pages = [...root.querySelectorAll('.sheet')];
+  const body = (pages.length ? pages : [root]).map(pg => {
+    // صف العناوين الثلاثي (ph3) يوضع كجدول بلا حدود ليبقى في سطر واحد
+    const ph3 = pg.querySelector('.ph3');
+    if (ph3) {
+      const cells = [...ph3.children].map((d, i) => `<w:tc><w:tcPr><w:tcW w:w="${Math.floor(W / 3)}" w:type="dxa"/></w:tcPr>${[...d.childNodes].map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean).map(t => P(t, { center: i === 1, b: true, sz: i === 1 ? 28 : 22, after: 0 })).join('')}</w:tc>`).join('');
+      ph3.outerHTML = `<div data-raw="1"></div>`; pg.querySelector('[data-raw]').setAttribute('data-x', `<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="${W}" w:type="dxa"/></w:tblPr><w:tr>${cells}</w:tr></w:tbl>`);
+    }
+    let x = '';
+    [...pg.childNodes].forEach(n => { if (n.nodeType === 1 && n.dataset && n.dataset.raw) x += n.dataset.x + P('', { after: 0 }); else x += blocksOf(n); });
+    return x;
+  }).map((x, i, a) => i < a.length - 1 ? x.replace(/<\/w:p>$/, '<w:r><w:br w:type="page"/></w:r></w:p>') : x).join('');
+  const sect = land ? '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="567" w:right="567" w:bottom="567" w:left="567" w:header="300" w:footer="300" w:gutter="0"/>' : '<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="680" w:right="850" w:bottom="680" w:left="850" w:header="300" w:footer="300" w:gutter="0"/>';
+  const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr>${sect}<w:bidi/></w:sectPr></w:body></w:document>`;
+  return new Blob([zipStore([
+    { name: '[Content_Types].xml', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`) },
+    { name: '_rels/.rels', data: enc.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`) },
+    { name: 'word/document.xml', data: enc.encode(docXml) }])], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+// ======================================================================
+//  التشغيل + النقل من الإصدار السابق
+// ======================================================================
+function readOldDB() {
+  return new Promise(res => {
+    let existed = true, r;
+    try { r = indexedDB.open('GradesDB_v6'); } catch (e) { return res(null); }
+    r.onupgradeneeded = () => { existed = false; r.transaction.abort(); };
+    r.onerror = () => res(null); r.onblocked = () => res(null);
+    r.onsuccess = async () => {
+      const d = r.result; if (!existed) { d.close(); return res(null); }
+      const out = {};
+      for (const s of ['settings', 'subjects', 'students', 'exams']) {
+        if (!d.objectStoreNames.contains(s)) { out[s] = []; continue; }
+        out[s] = await new Promise(rs => { const q = d.transaction(s).objectStore(s).getAll(); q.onsuccess = () => rs(q.result || []); q.onerror = () => rs([]); });
+      }
+      d.close(); res(out);
+    };
+  });
+}
+function presetFor(name) { return /عرب/.test(name) ? 'arabic' : /اسلام|إسلام/.test(name) ? 'islamic' : 'single'; }
+async function firstRun() {
+  const st = defSettings(); let classes = [], subjects = [], students = [], exams = [];
+  const old = await readOldDB();
+  if (old && (old.students.length || old.subjects.length || old.exams.length || old.settings.length)) {
+    const os = old.settings.find(x => x.id === 'main') || {};
+    if (os.schoolName) st.school = os.schoolName; if (os.year) st.year = os.year; if (os.teacher) st.teacher = os.teacher;
+    if (os.principal) st.principal = os.principal; if (os.geminiKey) st.aiKey = os.geminiKey;
+    old.students.forEach(s => { const cls = (s.className || os.defaultClass || 'السادس').trim(); if (!classes.includes(cls)) classes.push(cls); students.push({ id: uid(), name: String(s.name || '').trim(), cls, num: String(s.idNum || '') }); });
+    const map = {};
+    old.subjects.forEach(s => { const n = String(s.name || '').trim(); if (!n) return; let x = subjects.find(y => y.name === n); if (!x) { x = { id: uid(), name: n, scheme: PRESETS[presetFor(n)]() }; subjects.push(x); } map[s.id] = x.id; });
+    old.exams.forEach(e => exams.push({ id: uid(), subj: map[e.subjectId] || '', cls: os.defaultClass || classes[0] || '', kind: e.kind === 'midyear' ? 'mid' : e.kind || 'monthly', month: e.month || 'تشرين الأول', time: e.time || 'ساعة واحدة', updated: e.updatedAt || '',
+      qs: (e.questions || []).map(q => ({ id: uid(), type: q.type || 'essay', marks: q.marks || 0, topic: q.topic || '', text: q.text || '', options: (q.options || []).concat(['', '', '', '']).slice(0, 4), a: (q.matchA || []).concat(['', '', '', '']).slice(0, 4), b: (q.matchB || []).concat(['', '', '', '']).slice(0, 4), answer: q.answer || '' })) }));
+    if (os.defaultClass && !classes.includes(os.defaultClass)) classes.push(os.defaultClass);
+    window._migrated = true;
+  }
+  if (!classes.length) classes = ['السادس'];
+  if (!subjects.some(s => presetFor(s.name) === 'arabic')) subjects.unshift({ id: uid(), name: 'اللغة العربية', scheme: PRESETS.arabic() });
+  if (!subjects.some(s => presetFor(s.name) === 'islamic')) subjects.splice(1, 0, { id: uid(), name: 'التربية الإسلامية', scheme: PRESETS.islamic() });
+  await dbPutMany('meta', [{ k: 'settings', v: st }, { k: 'classes', v: classes }, { k: 'subjects', v: subjects }, { k: 'timetable', v: defTimetable() }, { k: 'seating', v: defSeating() }]);
+  await dbPutMany('students', students); await dbPutMany('exams', exams);
+}
+async function loadAll() {
+  let meta = await dbAll('meta');
+  if (!meta.some(m => m.k === 'settings')) { await firstRun(); meta = await dbAll('meta'); }
+  const M = Object.fromEntries(meta.map(m => [m.k, m.v]));
+  S.settings = Object.assign(defSettings(), M.settings || {});
+  S.classes = M.classes || []; S.subjects = M.subjects || [];
+  S.timetable = Object.assign(defTimetable(), M.timetable || {});
+  S.seating = Object.assign(defSeating(), M.seating || {});
+  S.students = await dbAll('students'); S.exams = await dbAll('exams');
+  S.grades = new Map((await dbAll('grades')).map(g => [g.key, g]));
+  applyFont();
+}
+async function init() {
+  try {
+    await openDB(); await loadAll(); renderNav(); render();
+    if (window._migrated) toast('تم نقل الطلاب والمواد ودفاتر الأسئلة من النسخة السابقة');
+  } catch (e) { console.error(e); $('view').innerHTML = `<div class="card err">خطأ في التشغيل: ${esc(e.message)}</div>`; }
+}
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const w = reg.installing; if (!w) return;
+      w.addEventListener('statechange', () => { if (w.state === 'activated' && navigator.serviceWorker.controller) toast('يوجد تحديث جديد — أغلق التطبيق وافتحه لتفعيله'); });
+    });
+  }).catch(() => {});
+}
+window.addEventListener('resize', () => fixStickyHeads());
+init();
+</script>
+</body>
+</html>
