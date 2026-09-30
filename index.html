@@ -183,12 +183,19 @@ body.pv-open>*:not(#printView):not(#toast):not(#pageSize){display:none!important
 .sheet table.ttp td.dayh{background:#dce6f2;width:24mm;font-size:13pt;font-weight:800}
 .sheet table.ttp td.dayh b{color:#0d3b66}
 .sheet table.ttp td.off{background:#eee}
-.sheet table.ttm{table-layout:fixed;font-size:8pt}
-.sheet table.ttm th,.sheet table.ttm td{padding:1px;font-size:8pt;white-space:normal;line-height:1.15}
-.sheet table.ttm td{height:13mm}
+.sheet table.ttm{table-layout:fixed;font-size:8pt;font-family:Arial,Tahoma,sans-serif}
+.sheet table.ttm th,.sheet table.ttm td{padding:1px;font-size:8.5pt;white-space:normal;line-height:1.2}
+.sheet table.ttm td{height:var(--rh,13mm);white-space:nowrap;overflow:hidden;font-size:8pt;font-weight:700;color:#0d3b66}
+.sheet table.ttm td.cn{overflow-wrap:normal}
+.sheet table.ttm td small{font-size:6.8pt;font-weight:400;color:#555}
+.sheet table.ttm .fx{display:inline-block;white-space:nowrap}
 .sheet table.ttm th.dh{background:#0d3b66;color:#fff;font-size:10pt}
-.sheet table.ttm td.cn{background:#dce6f2;font-weight:800;font-size:10pt;width:20mm}
+.sheet table.ttm td.cn,.sheet table.ttm th.cnh{background:#dce6f2;font-weight:800;font-size:9pt;width:13mm;color:#0d3b66}
 .sheet table.ttm td small{display:block;color:#555;font-size:6.5pt}
+.sheet table.pt th.gap,.sheet table.pt td.gap{width:2.2mm;min-width:2.2mm;padding:0;background:#fff!important;border-top-color:#fff;border-bottom-color:#fff}
+.ph3.tth{align-items:center;border-bottom:2px solid #0d3b66;padding-bottom:4px}
+.ph3.tth > div{flex:1}
+.ph3.tth .c{font-size:15pt}
 /* بطاقات المقاعد للصق */
 .sheet.cards-sheet{padding:8mm}
 .cards{display:grid;gap:3mm;height:275mm}
@@ -1293,26 +1300,33 @@ function ttTap(d, p) {
   if (a.d !== d || a.p !== p) { const tmp = g[a.d][a.p]; g[a.d][a.p] = g[d][p]; g[d][p] = tmp; saveMeta('timetable'); }
   render();
 }
+function ttHead(title) {
+  const st = S.settings;
+  return `<div class="ph3 tth"><div>${esc(title)}</div><div class="c">${esc(st.school)}</div><div style="text-align:left">للعام الدراسي ${esc(st.year)}</div></div>`;
+}
 function ttSheets(kind) {
   const R = S.timetable.result, st = S.settings;
   if (kind === 'master') return [{ name: 'الجدول العام', html: ttMasterHTML() }];
   const keys = kind === 'class' ? Object.keys(R.grid).filter(c => S.classes.includes(c)) : ttTeachers();
-  return keys.map((k, i) => ({ name: k, html: `<div class="sheet${i < keys.length - 1 ? ' pbreak' : ''}"><div class="ph"><div class="l1">${esc(st.school)}</div>
-    <div class="l2">جدول الدروس الأسبوعي — ${kind === 'class' ? 'الصف ' : 'المعلم/ة: '}${esc(k)}</div><div>للعام الدراسي ${esc(st.year)}</div></div>
+  return keys.map((k, i) => ({ name: k, html: `<div class="sheet${i < keys.length - 1 ? ' pbreak' : ''}">${ttHead('جدول الدروس الأسبوعي — ' + (kind === 'class' ? 'الصف ' : 'المعلم/ة: ') + k)}
     ${ttTableHTML(kind, k, false)}<div class="sig"><div>مدير المدرسة<br>${esc(st.principal)}</div></div></div>` }));
 }
 // الجدول العام: كل الصفوف في صفحة واحدة
+// اختصار اسم المادة في الجدول العام لتتسع الخلية: "التربية الإسلامية" ← "إسلامية"
+const shortSubj = n => { const w = String(n).trim().split(/\s+/); const x = (w.length > 1 && /^(اللغة|التربية|مادة)$/.test(w[0])) ? w.slice(1).join(' ') : w.join(' '); return x.replace(/^ال(?=\S{4,})/, '').replace(/^ا(?=[لن]ك)/, 'إ'); };
 function ttMasterHTML() {
   const T = S.timetable, R = T.result, st = S.settings, cls = Object.keys(R.grid).filter(c => S.classes.includes(c));
   const days = T.days.map((d, i) => ({ ...d, i })).filter(d => d.n > 0);
-  let h = `<table class="pt ttm"><thead><tr><th rowspan="2" class="dh">الصف</th>${days.map(d => `<th colspan="${d.n}" class="dh">${esc(d.name)}</th>`).join('')}</tr>
+  const gap = (tag, extra = '') => `<${tag} class="gap"${extra}></${tag}>`;
+  const rh = Math.max(9, Math.min(26, Math.floor(150 / Math.max(1, cls.length))));
+  let h = `<table class="pt ttm" style="--rh:${rh}mm"><thead><tr><th rowspan="2" class="dh cnh" style="width:13mm">الصف</th>${days.map((d, k) => (k ? gap('th', ' rowspan="2"') : '') + `<th colspan="${d.n}" class="dh">${esc(d.name)}</th>`).join('')}</tr>
     <tr>${days.map(d => Array.from({ length: d.n }, (_, p) => `<th>${p + 1}</th>`).join('')).join('')}</tr></thead><tbody>`;
   cls.forEach(c => {
     h += `<tr><td class="cn">${esc(c)}</td>`;
-    days.forEach(d => { for (let p = 0; p < d.n; p++) { const x = R.grid[c][d.i] && R.grid[c][d.i][p]; h += `<td>${x ? `${esc(x.s)}<small>${esc(x.t)}</small>` : ''}</td>`; } });
+    days.forEach((d, k) => { if (k) h += gap('td'); for (let p = 0; p < d.n; p++) { const x = R.grid[c][d.i] && R.grid[c][d.i][p]; h += `<td>${x ? `<span class="fx">${esc(shortSubj(x.s))}</span><small><span class="fx">${esc(x.t)}</span></small>` : ''}</td>`; } });
     h += '</tr>';
   });
-  return `<div class="sheet"><div class="ph"><div class="l1">${esc(st.school)}</div><div class="l2">الجدول العام للدروس الأسبوعية</div><div>للعام الدراسي ${esc(st.year)}</div></div>${h}</tbody></table>
+  return `<div class="sheet">${ttHead('الجدول العام للدروس الأسبوعية')}${h}</tbody></table>
     <div class="sig"><div>مدير المدرسة<br>${esc(st.principal)}</div></div></div>`;
 }
 function printTT(kind) {
@@ -1553,7 +1567,7 @@ function rSettings() {
     <div class="btns"><button class="btn g" onclick="exportBackup()">${ic('down')} حفظ نسخة احتياطية</button>
       <label class="btn b">${ic('up')} استرجاع نسخة<input type="file" class="hidden" accept=".json" onchange="importBackup(this)"></label>
       <button class="btn r" onclick="resetAll()">${ic('trash')} حذف كل البيانات</button></div>
-    <p class="muted">الإصدار 2.2</p>
+    <p class="muted">الإصدار 2.3</p>
   </div>`;
 }
 function monthPicker(term) {
@@ -1683,8 +1697,22 @@ function showPrint(title, html, o = {}) {
   $('pvBar').innerHTML = bar.join('');
   $('printBody').innerHTML = html;
   $('printView').classList.remove('hidden'); document.body.classList.add('pv-open');
+  fitCells();
   window._pvY = window.scrollY; window.scrollTo(0, 0);
   try { history.pushState({ pv: 1 }, ''); window._pvPushed = true; } catch (e) {}
+}
+// تصغير خط الخلايا التي لا يتسع نصها (الجدول العام) — يُقاس بعرض صفحة الطباعة الفعلي
+function fitCells() {
+  document.querySelectorAll('#printBody .sheet').forEach(sh => {
+    const cells = sh.querySelectorAll('table.ttm td:not(.cn):not(.gap)'); if (!cells.length) return;
+    const old = sh.getAttribute('style') || '';
+    sh.style.width = '281mm'; sh.style.maxWidth = 'none'; sh.style.padding = '0';
+    cells.forEach(td => td.querySelectorAll('.fx').forEach(sp => {
+      const avail = td.clientWidth - 3; let fs = parseFloat(getComputedStyle(sp).fontSize);
+      while (sp.getBoundingClientRect().width > avail && fs > 5) { fs -= 0.3; sp.style.fontSize = fs + 'px'; }
+    }));
+    sh.setAttribute('style', old);
+  });
 }
 function hidePrint() { $('printView').classList.add('hidden'); document.body.classList.remove('pv-open'); $('printBody').innerHTML = ''; window.scrollTo(0, window._pvY || 0); }
 function closePrint() { hidePrint(); if (window._pvPushed) { window._pvPushed = false; history.back(); } }
@@ -1799,7 +1827,7 @@ const xe = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 function makeXLSXBlob(sheets) {
   const enc = new TextEncoder(), E = [];
   const AL = rot => `<alignment horizontal="center" vertical="center" wrapText="1" readingOrder="2"${rot ? ' textRotation="90"' : ''}/>`;
-  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font><font><b/><sz val="13"/><name val="Arial"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFCE9C6"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9EFDC"/></patternFill></fill></fills><borders count="2"><border/><border><left style="thin"><color rgb="FF333333"/></left><right style="thin"><color rgb="FF333333"/></right><top style="thin"><color rgb="FF333333"/></top><bottom style="thin"><color rgb="FF333333"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="8">`
+  const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font><font><b/><sz val="11"/><name val="Arial"/></font><font><b/><sz val="13"/><name val="Arial"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDCE6F2"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFCE9C6"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9EFDC"/></patternFill></fill></fills><borders count="2"><border/><border><left style="thin"><color rgb="FF333333"/></left><right style="thin"><color rgb="FF333333"/></right><top style="thin"><color rgb="FF333333"/></top><bottom style="thin"><color rgb="FF333333"/></bottom></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="9">`
     + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">${AL()}</xf>`
     + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL()}</xf>`
     + `<xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL()}</xf>`
@@ -1808,6 +1836,7 @@ function makeXLSXBlob(sheets) {
     + `<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${AL(1)}</xf>`
     + `<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center" readingOrder="2"/></xf>`
     + `<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center" readingOrder="2"/></xf>`
+    + `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`
     + `</cellXfs></styleSheet>`;
   let ct = '', wbs = '', wbr = ''; const used = new Set();
   sheets.forEach((sh, i) => {
@@ -1818,7 +1847,10 @@ function makeXLSXBlob(sheets) {
     wbr += `<Relationship Id="rId${n}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${n}.xml"/>`;
     const maxC = Math.max(1, ...sh.rows.map(r => r.length));
     const w = Array(maxC).fill(5);
-    sh.rows.forEach(r => r.forEach((c, ci) => { if (c && !c.title && !c.h && !c.note && c.v !== '') w[ci] = Math.max(w[ci], String(c.v).length * 1.15 + 2); }));
+    const gapC = new Set(); sh.rows.forEach(r => r.forEach((c, ci) => { if (c && c.gap) gapC.add(ci); }));
+    sh.rows.forEach(r => r.forEach((c, ci) => { if (c && !c.title && !c.h && !c.note && c.v !== '') w[ci] = Math.max(w[ci], Math.min(String(c.v).split('\n').reduce((a, l) => Math.max(a, l.length), 0), 40) * 1.15 + 2); }));
+    gapC.forEach(ci => w[ci] = 1);
+    if (maxC > 15) for (let ci = 0; ci < maxC; ci++) if (!gapC.has(ci)) w[ci] = Math.min(w[ci], ci === 0 ? 12 : 9);
     let cols = '<cols>'; w.forEach((x, c) => cols += `<col min="${c + 1}" max="${c + 1}" width="${Math.min(38, Math.round(x))}" customWidth="1"/>`); cols += '</cols>';
     let rx = '';
     sh.rows.forEach((row, r) => {
@@ -1827,7 +1859,7 @@ function makeXLSXBlob(sheets) {
         if (raw === undefined) return;
         const cell = raw && typeof raw === 'object' && 'v' in raw ? raw : { v: raw };
         if (cell.vert) tall = true;
-        const s = cell.title ? 4 : cell.note ? 7 : cell.vert ? 5 : cell.h ? 1 : cell.fill === 1 ? 2 : cell.fill === 2 ? 3 : cell.left ? 6 : 0, ref = xCol(c) + (r + 1);
+        const s = cell.gap ? 8 : cell.title ? 4 : cell.note ? 7 : cell.vert ? 5 : cell.h ? 1 : cell.fill === 1 ? 2 : cell.fill === 2 ? 3 : cell.left ? 6 : 0, ref = xCol(c) + (r + 1);
         cx += (typeof cell.v === 'number' && isFinite(cell.v)) ? `<c r="${ref}" s="${s}"><v>${cell.v}</v></c>` : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${xe(cell.v)}</t></is></c>`;
       });
       rx += `<row r="${r + 1}"${tall ? ' ht="95" customHeight="1"' : ''}>${cx}</row>`;
@@ -1872,7 +1904,7 @@ function tableMatrix(table, r0, merges) {
       for (let dr = 0; dr < rs; dr++) for (let dc = 0; dc < cs; dc++) {
         grid[r + dr] = grid[r + dr] || [];
         const lines = !isH ? cellLines(cell) : null;
-        grid[r + dr][c + dc] = dr || dc ? { v: '', h: isH, cov: true, dr, dc, cs } : { v: num ? Number(txt) : (lines && lines.length > 1 ? lines.map(l => l.t).join('\n') : txt), h: isH, fill, rs, cs, vert, left: /nm/.test(cl), lines, day: /dayh|cn/.test(cl) };
+        grid[r + dr][c + dc] = dr || dc ? { v: '', h: isH, cov: true, dr, dc, cs, gap: /\bgap\b/.test(cl) } : { v: num ? Number(txt) : (lines && lines.length > 1 ? lines.map(l => l.t).join('\n') : txt), h: isH, fill, rs, cs, vert, left: /nm/.test(cl), lines, day: /dayh|cn/.test(cl), gap: /\bgap\b/.test(cl) };
       }
       if (merges && (rs > 1 || cs > 1)) merges.push(`${xCol(c)}${r0 + r + 1}:${xCol(c + cs - 1)}${r0 + r + rs}`);
       c += cs;
@@ -1917,7 +1949,9 @@ function makeDOCXBlob(title, bodyHTML, opt = {}) {
     const m = tableMatrix(tbl, 0, null), nc = Math.max(...m.map(r => r.length));
     const nameCol = (m.find(r => r.some(c => c && c.left)) || []).findIndex(c => c && c.left);
     const unit = Math.floor(W / (nc + (nameCol >= 0 ? 3 : 0)));
-    const widths = Array.from({ length: nc }, (_, i) => i === nameCol ? unit * 4 : unit);
+    const gapCols = new Set(); m.forEach(r => r.forEach((c, i) => { if (c && c.gap) gapCols.add(i); }));
+    const unitG = Math.floor((W - gapCols.size * 70) / (nc - gapCols.size + (nameCol >= 0 ? 3 : 0)));
+    const widths = Array.from({ length: nc }, (_, i) => gapCols.has(i) ? 70 : i === nameCol ? unitG * 4 : unitG);
     const headRows = m.filter(r => r.some(c => c && c.h)).length;
     const sz = isTM ? 13 : isTT ? 24 : small ? 18 : 22;
     let x = `<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="${W}" w:type="dxa"/><w:tblBorders>` + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(s => `<w:${s} w:val="single" w:sz="6" w:color="333333"/>`).join('') + `</w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="40" w:type="dxa"/><w:right w:w="40" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
@@ -1928,8 +1962,8 @@ function makeDOCXBlob(title, bodyHTML, opt = {}) {
         const c = row[ci] || { v: '' };
         if (c.cov && c.dc > 0) continue;
         const span = c.cov ? c.cs : (c.cs || 1), wsum = widths.slice(ci, ci + span).reduce((a, b) => a + b, 0);
-        const fill = c.h ? 'DCE6F2' : c.day ? 'DCE6F2' : c.fill === 1 ? 'FCE9C6' : c.fill === 2 ? 'D9EFDC' : '';
-        const pr = `<w:tcW w:w="${wsum}" w:type="dxa"/>${span > 1 ? `<w:gridSpan w:val="${span}"/>` : ''}${c.cov ? '<w:vMerge/>' : (c.rs > 1 ? '<w:vMerge w:val="restart"/>' : '')}${fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : ''}<w:vAlign w:val="center"/>`;
+        const fill = c.gap ? 'FFFFFF' : c.h ? 'DCE6F2' : c.day ? 'DCE6F2' : c.fill === 1 ? 'FCE9C6' : c.fill === 2 ? 'D9EFDC' : '';
+        const pr = `<w:tcW w:w="${wsum}" w:type="dxa"/>${span > 1 ? `<w:gridSpan w:val="${span}"/>` : ''}${c.cov ? '<w:vMerge/>' : (c.rs > 1 ? '<w:vMerge w:val="restart"/>' : '')}${c.gap ? '<w:tcBorders><w:top w:val="nil"/><w:bottom w:val="nil"/></w:tcBorders>' : ''}${fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : ''}<w:vAlign w:val="center"/>`;
         const content = (!c.cov && c.lines && c.lines.length > 1) ? c.lines.map((l, k) => P(l.t, { center: !c.left, b: l.big || k === 0, sz: l.big && !isTM ? sz + 4 : l.small ? Math.max(11, sz - 5) : sz, after: 0 })).join('')
           : P(c.cov ? '' : String(c.v), { center: !c.left, b: c.h || c.fill || c.day, sz, after: 0 });
         x += `<w:tc><w:tcPr>${pr}</w:tcPr>${content}</w:tc>`;
