@@ -153,19 +153,23 @@ body.pv-open>*:not(#printView):not(#toast):not(#pageSize){display:none!important
 #printView{background:#e9edf2;min-height:100vh}
 .pv-bar{position:sticky;top:0;z-index:10;background:var(--pri);color:#fff;padding:calc(.5rem + env(safe-area-inset-top)) .7rem .5rem;display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
 .pv-bar .t{margin-right:auto;font-weight:700;font-size:.9rem}
-#printBody{padding:12px}
-.sheet{background:#fff;margin:0 auto 14px;padding:12mm 10mm;box-shadow:0 2px 10px rgba(0,0,0,.12);color:#000;max-width:297mm;font-family:'Times New Roman','Traditional Arabic',Tahoma,serif}
-.sheet.portrait{max-width:210mm}
-.sheet table.pt{border-collapse:collapse;width:100%;font-size:10.5pt}
-.sheet table.pt th,.sheet table.pt td{border:1px solid #333;padding:3px 4px;text-align:center}
+#printBody{padding:12px;overflow-x:auto;zoom:var(--pz,1)}
+.sheet{background:#fff;margin:0 auto 14px;padding:10mm;box-shadow:0 2px 10px rgba(0,0,0,.12);color:#000;font-family:'Times New Roman','Traditional Arabic',Tahoma,serif;width:max-content}
+/* كل ورقة = صفحة A4 ثابتة؛ المحتوى يُقاس ويُصغَّر ليتسع، والورقة العرضية تُدار على الصفحة العمودية عند الطباعة */
+.sheet .pg{position:relative;width:180mm;height:260mm;overflow:hidden}
+.sheet.land .pg{width:260mm;height:180mm}
+.sheet .fit{position:absolute;top:0;right:0;transform-origin:top right;transform:scale(var(--s,1))}
+.sheet table.pt{border-collapse:collapse;width:100%;font-size:10pt}
+.sheet table.pt th,.sheet table.pt td{border:1px solid #333;padding:2px 3px;text-align:center}
 .sheet table.pt th{background:#dfe8f3;font-weight:700}
 .sheet table.pt th.band{background:#c9d8ea}
 .sheet table.pt th.subh,.sheet table.pt td.sub{background:#fbe9c6}
 .sheet table.pt th.toth,.sheet table.pt td.tot{background:#d9efdc}
-.sheet table.pt td.nm{text-align:right;min-width:150px}
+.sheet table.pt td.nm{text-align:right;white-space:nowrap}
 .sheet table.pt td.fail{color:#b00;font-weight:700}
 .sheet table.pt tr{height:22px}
-.sheet .vt{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;max-height:130px;white-space:normal;line-height:1.15}
+.sheet.portrait table.pt tr{height:26px}
+.sheet .vt{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;max-height:110px;white-space:normal;line-height:1.15}
 .sheet th small{display:block;font-weight:700}
 .ph{text-align:center;margin-bottom:8px}
 .ph .l1{font-size:14pt;font-weight:800}
@@ -246,8 +250,7 @@ h3.sec{font-size:12pt;color:#0d3b66;margin:10px 0 4px;border-bottom:1.5px solid 
 .sheet.portrait .ph3.tth .c{font-size:14pt}
 .ph3.tth .c{font-size:15pt}
 /* بطاقات المقاعد للصق */
-.sheet.cards-sheet{padding:8mm}
-.cards{display:grid;gap:3mm;height:275mm}
+.cards{display:grid;gap:3mm;height:258mm}
 .scard{border:1.6px dashed #555;border-radius:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2mm 3mm;overflow:hidden;border-top:6px solid var(--cc,#0d3b66);background:#fff}
 .scard .t1{font-size:8.5pt;color:#444;font-weight:700}
 .scard .sn{font-weight:900;color:#0d3b66;line-height:1.05}
@@ -277,26 +280,16 @@ h3.sec{font-size:12pt;color:#0d3b66;margin:10px 0 4px;border-bottom:1.5px solid 
 .wish{text-align:center;font-weight:800;color:#b8860b;margin:16px 0 4px;font-size:13pt}
 
 @media print{
-  @page{margin:8mm}
-  body{background:#fff}
+  @page{size:A4 portrait;margin:17mm 15mm}
+  html,body{background:#fff;margin:0;padding:0}
   .pv-bar{display:none!important}
   #printView{background:#fff;min-height:0}
-  .sheet{page-break-inside:auto}
-  .sheet table.pt thead{display:table-header-group}
-  .sheet table.pt tr{page-break-inside:avoid;break-inside:avoid}
-  #printBody{padding:0}
-  .sheet{box-shadow:none;margin:0;padding:0;max-width:none;width:100%}
-  .sheet.cards-sheet{padding:0}
-  .cards{height:279mm}
-  .sheet table.ttp tr{height:auto}
+  #printBody{padding:0;zoom:1!important;overflow:visible}
   #toast,.modal-bg{display:none!important}
-  .sheet table.pt{font-size:9.5pt}
-  .sheet table.pt th,.sheet table.pt td{padding:1px 3px}
-  .sheet table.pt tr{height:20px}
-  .sheet.portrait table.pt tr{height:26px}
-  .sheet table.pt td.nm{min-width:0;white-space:nowrap}
-  .sheet .vt{max-height:105px}
-  .ph{margin-bottom:4px}.ph3{margin-bottom:4px}.sig{margin-top:8px}.pno{margin-top:2px}
+  .sheet{margin:0;padding:0;box-shadow:none;width:auto;break-inside:avoid;page-break-inside:avoid}
+  .sheet:not(:last-child){break-after:page;page-break-after:always}
+  .sheet .pg,.sheet.land .pg{width:180mm;height:260mm}
+  .sheet.land .fit{right:auto;left:0;transform-origin:top left;transform:translateY(260mm) rotate(-90deg) scale(var(--s,1))}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
 @media(max-width:640px){
@@ -2321,7 +2314,7 @@ function rSettings() {
     <div class="btns"><button class="btn g" onclick="exportBackup()">${ic('down')} حفظ نسخة احتياطية</button>
       <label class="btn b">${ic('up')} استرجاع نسخة<input type="file" class="hidden" accept=".json" onchange="importBackup(this)"></label>
       <button class="btn r" onclick="resetAll()">${ic('trash')} حذف كل البيانات</button></div>
-    <p class="muted">الإصدار 2.5</p>
+    <p class="muted">الإصدار 2.6</p>
   </div>`;
 }
 function monthPicker(term) {
@@ -2444,7 +2437,7 @@ async function resetAll() {
 //  المعاينة والطباعة
 // ======================================================================
 function showPrint(title, html, o = {}) {
-  $('pageSize').textContent = `@page{size:A4 ${o.portrait ? 'portrait' : 'landscape'};margin:8mm}`;
+  $('pageSize').textContent = `@page{size:A4 portrait;margin:17mm 15mm}`; // سفاري يتجاهل الاتجاه، لذلك الصفحة دائماً عمودية
   const bar = [`<button class="btn r" onclick="closePrint()">${ic('back')} رجوع</button>`,
     `<button class="btn g" onclick="doPrint()">${ic('print')} طباعة / PDF</button>`];
   window._pv = { title, o };
@@ -2454,22 +2447,40 @@ function showPrint(title, html, o = {}) {
   $('pvBar').innerHTML = bar.join('');
   $('printBody').innerHTML = html;
   $('printView').classList.remove('hidden'); document.body.classList.add('pv-open');
-  fitCells();
+  layoutSheets();
   window._pvY = window.scrollY; window.scrollTo(0, 0);
   try { history.pushState({ pv: 1 }, ''); window._pvPushed = true; } catch (e) {}
 }
-// تصغير خط الخلايا التي لا يتسع نصها (الجدول العام) — يُقاس بعرض صفحة الطباعة الفعلي
-function fitCells() {
-  document.querySelectorAll('#printBody .sheet').forEach(sh => {
-    const cells = sh.querySelectorAll('table.ttm td:not(.cn):not(.gap)'); if (!cells.length) return;
-    const old = sh.getAttribute('style') || '';
-    sh.style.width = '281mm'; sh.style.maxWidth = 'none'; sh.style.padding = '0';
-    cells.forEach(td => td.querySelectorAll('.fx').forEach(sp => {
-      const avail = td.clientWidth - 3; let fs = parseFloat(getComputedStyle(sp).fontSize);
-      while (sp.getBoundingClientRect().width > avail && fs > 5) { fs -= 0.3; sp.style.fontSize = fs + 'px'; }
-    }));
-    sh.setAttribute('style', old);
+// يضع كل ورقة في صندوق صفحة ثابت ويصغّرها حتى تتسع عرضاً وارتفاعاً (لا قص ولا صفحات زائدة)
+function layoutSheets() {
+  const body = $('printBody'), MM = 96 / 25.4; body.style.setProperty('--pz', 1);
+  body.querySelectorAll('.sheet').forEach(sh => {
+    if (sh.querySelector(':scope > .pg')) return;
+    const land = !sh.classList.contains('portrait'); sh.classList.toggle('land', land);
+    const pg = document.createElement('div'), fit = document.createElement('div'); pg.className = 'pg'; fit.className = 'fit';
+    while (sh.firstChild) fit.appendChild(sh.firstChild); pg.appendChild(fit); sh.appendChild(pg);
+    const W = land ? 260 : 180, H = land ? 180 : 260;
+    let sc = 1;
+    for (let i = 0; i < 10; i++) {
+      fit.style.width = (W / sc) + 'mm';
+      const w = Math.max(fit.scrollWidth, W / sc * MM), h = fit.scrollHeight;
+      const ns = Math.min(1, W * MM / w, H * MM / h);
+      if (ns >= sc - 0.002) { sc = Math.min(sc, ns); break; }
+      sc = ns;
+    }
+    if (sc < 1) sc *= 0.995;
+    fit.style.width = (W / sc) + 'mm'; fit.style.setProperty('--s', sc.toFixed(4));
   });
+  fitCells();
+  const first = body.querySelector('.sheet');
+  if (first) body.style.setProperty('--pz', Math.min(1, (body.clientWidth - 24) / first.offsetWidth).toFixed(3));
+}
+// الجدول العام: تصغير خط الخلية التي لا يتسع نصها (قياس تخطيطي لا يتأثر بالتصغير)
+function fitCells() {
+  document.querySelectorAll('#printBody table.ttm td:not(.cn):not(.gap)').forEach(td => td.querySelectorAll('.fx').forEach(sp => {
+    const avail = td.clientWidth - 3; let fs = parseFloat(getComputedStyle(sp).fontSize);
+    while (sp.offsetWidth > avail && fs > 4) { fs -= 0.3; sp.style.fontSize = fs + 'px'; }
+  }));
 }
 function hidePrint() { $('printView').classList.add('hidden'); document.body.classList.remove('pv-open'); $('printBody').innerHTML = ''; window.scrollTo(0, window._pvY || 0); }
 function closePrint() { hidePrint(); if (window._pvPushed) { window._pvPushed = false; history.back(); } }
@@ -2761,7 +2772,8 @@ function makeDOCXBlob(title, bodyHTML, opt = {}) {
       ph3.outerHTML = `<div data-raw="1"></div>`; pg.querySelector('[data-raw]').setAttribute('data-x', `<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="${W}" w:type="dxa"/></w:tblPr><w:tr>${cells}</w:tr></w:tbl>`);
     }
     let x = '';
-    [...pg.childNodes].forEach(n => { if (n.nodeType === 1 && n.dataset && n.dataset.raw) x += n.dataset.x + P('', { after: 0 }); else x += blocksOf(n); });
+    const inner = pg.querySelector('.fit') || pg;
+    [...inner.childNodes].forEach(n => { if (n.nodeType === 1 && n.dataset && n.dataset.raw) x += n.dataset.x + P('', { after: 0 }); else x += blocksOf(n); });
     return x;
   }).map((x, i, a) => i < a.length - 1 ? x.replace(/<\/w:p>$/, '<w:r><w:br w:type="page"/></w:r></w:p>') : x).join('');
   const sect = land ? '<w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="567" w:right="567" w:bottom="567" w:left="567" w:header="300" w:footer="300" w:gutter="0"/>' : '<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="680" w:right="850" w:bottom="680" w:left="850" w:header="300" w:footer="300" w:gutter="0"/>';
